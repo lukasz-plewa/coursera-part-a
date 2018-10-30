@@ -1,0 +1,8 @@
+*.sublime-project
+*.sublime-workspace
+.metadata
+Debug
+*.code-workspace
+RemoteSystemsTempFiles/
+
+
