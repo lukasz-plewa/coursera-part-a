@@ -1,0 +1,7 @@
+
+- używać zamiast #define:
+    - const
+    - inline function()
+- manipulatory w iostream, takie jak endl
+- safe casts: static_cast<type>
+- 
