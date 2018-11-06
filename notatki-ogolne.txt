@@ -1,7 +1,66 @@
+vertex, vertices - wierzchołek, wierzchołki
 
 - używać zamiast #define:
     - const
     - inline function()
 - manipulatory w iostream, takie jak endl
-- safe casts: static_cast<type>
-- 
+- Rzutowanie:
+  - safe casts: static_cast<type>
+  - reinterpret_cast: niebezpieczne, równoważne z (type) z C (które jest deprecated), bardzo niebezpieczne
+  - dynamic_cast<type> używane w klasach, w specyficznych przypadkach, raczej nie używać
+  - const_cast<type>
+
+--------------------------------------------------------------------------------
+- Grafy
+  - complete graph with 4 nodes: K4 - naming convention
+  - degree of node: how many edges goes from that node (vertex). In K4 every node is degree of 3
+  - seven bridges of königsberg - probalem, który Leonhard Euler udowodnił dzięki teorii grafów. Dlatego algorytm przejścia przez wszystkie krawędzie dokładnie raz, nazywany cyklem Eulerowskim
+- Najpopularniejsze reprezentacje grafów:
+    - connectivity matrix (zawierająca wagi lub odległości)
+    - edge list - wygodne gdy graf jest niepełny (many nodes with low degree, for example: 100 nodes with degree 4)
+    - tradeoffs - graph as an ADT
+- List representation:
+   - directed graph with N vertices using an array of N lists of vertices
+   - weighted graph may be represented with a list of vertex / weight pairs
+   - undirected graph ma be represented by having vertex j in the list for vertex i and vertex i in the list for vertex j.
+example:
+- matrix:
+    1 2 3 4
+  1 1 1 1 1
+  2 1 0 0 0
+  3 0 1 0 1
+  4 0 1 1 0
+- list:   
+  1 -> 1 -> 2 -> 3 -> 4
+  2 -> 1
+  3 -> 2 -> 4
+  4 -> 2 -> 3
+
+- Dijkstra shortest path
+  - definitions:
+    - "closed nodes set" that have known shortest distances
+    - "opens nodes set" - what is reachable
+  - find shortest path between start and destination node s to d
+  - step 1: include s in a closed set and all immediate successors of s with ther distance in the open set
+  - step 2: pick the open node of least cost - say this node is n
+  - 
+
+  use list representation and implement dijkstra algorithm (also you can implement for matrix imaplementation)
+
+http://graphonline.ru/en/?graph=KXdTUOPYKsvARtQu
+
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
