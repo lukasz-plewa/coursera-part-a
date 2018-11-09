@@ -10,6 +10,14 @@ vertex, vertices - wierzchołek, wierzchołki
   - dynamic_cast<type> używane w klasach, w specyficznych przypadkach, raczej nie używać
   - const_cast<type>
 
+- operator overload:
+  - unary operator:
+    - preincrement ++
+      type operator++(type v) {return static_cast<type>(v=v+1);}
+    - postincrement ++
+      type operator++ (type& v, int) { type temp = v; v = temp+1; return temp; }
+  - binary operator 
+    operator + (type& val1, type& val2) { return (val1.x + val2.x); }
 --------------------------------------------------------------------------------
 - Grafy
   - complete graph with 4 nodes: K4 - naming convention

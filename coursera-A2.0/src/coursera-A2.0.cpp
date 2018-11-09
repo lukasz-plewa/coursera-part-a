@@ -10,25 +10,52 @@
 
 using namespace std;
 
-//#define ENUM_CLASS_DEMO 1
+#define ENUM_CLASS_DEMO 1
 //#define SUM_ARRAY_DEMO  1
-#define GRAPH_STRUCTURE 1
 
 #ifdef ENUM_CLASS_DEMO
 enum class days
     {SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY};
 
-ostream& operator<< (ostream &out, const days &d)
+ostream& operator<< (ostream& out, const days& d)
 {
-    out << static_cast<int>(d); return out;
+    switch(d){
+    case days::SUNDAY: out << "SUN"; break;
+    case days::MONDAY: out << "MON"; break;
+    case days::TUESDAY: out << "TUE"; break;
+    case days::WEDNESDAY: out << "WED"; break;
+    case days::THURSDAY: out << "THU"; break;
+    case days::FRIDAY: out << "FRI"; break;
+    case days::SATURDAY: out << "SAT"; break;
+    }
+    return out;
 }
 
-days operator++ (days &d)           //PREFIX OPERATOR
+days operator++ (days& d)           //PREFIX OPERATOR
 {
-    d = static_cast<days>((static_cast<int>(d)+1) % 7); return d;
+    return d = static_cast<days>((static_cast<int>(d)+1) % 7);
 }
 
-days operator++ (days &d, int)      //POSTFIX OPERATOR
+days operator-- (days& d)
+{
+    if (d == days::SUNDAY)
+        d = days::SATURDAY;
+    else
+        d = static_cast<days>((static_cast<int>(d)-1));
+    return d;
+}
+
+days operator-- (days& d, int)
+{
+    days temp = d;
+    if (d == days::SUNDAY)
+        d = days::SATURDAY;
+    else
+        d = static_cast<days>((static_cast<int>(d)-1));
+    return temp;
+}
+
+days operator++ (days& d, int)      //POSTFIX OPERATOR
 {
     days temp = d;
     d = static_cast<days>((static_cast<int>(d)+1) % 7);
@@ -78,11 +105,17 @@ void printArray(Printable data[], int size)
 int main() {
 #ifdef ENUM_CLASS_DEMO
     cout << "Demonstrate class enum" << endl;
-    days today{days::WEDNESDAY};
-    cout << "Today value is        " << today << endl;
+    days today{days::TUESDAY};
+    cout << "Today value is          " << today << endl;
     cout << "Pre increment value is  " << ++today << endl;
     cout << "Post increment value is " << today++ << endl;
-cout << "Today vaue is         " << today << endl;
+    cout << "Today vaue is           " << today << endl;
+
+    days d = days::MONDAY, e;
+    e = d++;
+    cout << d << '\t' << e << endl;
+    cout << "Today is " << d;
+    cout << ", yesterday was " << --d << endl;
 #endif // ENUM_CLASS_DEMOS
 
 #ifdef SUM_ARRAY_DEMO
@@ -97,8 +130,5 @@ cout << "Today vaue is         " << today << endl;
     printArray(sumarray_double, tab_length);
 #endif //SUM_ARRAY_DEMO
 
-#ifdef GRAPH_STRUCTURE
-
-#endif //GRAPH_STRUCTURE
     return 0;
 }
