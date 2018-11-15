@@ -9,13 +9,14 @@
 
 
 #include <vector>
+#include <set>
 #include "list_graph.h"
 
 using namespace std;
 
 const double density = 0.19;
 
-ostream& operator<< (ostream &out, const VertexWeight &edge) {
+ostream& operator<< (ostream &out, const Vertex &edge) {
     out << "(" << edge.vertex << "," << edge.weight << ")"; return out;
 }
 
@@ -45,16 +46,16 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
         for (size_t i = 0; i < N; i++)
         {
             cout << "reading connections for node " << i << endl;
-            vector<VertexWeight> node_connections;
+            vector<Vertex> node_connections;
             for (size_t j = 0; j < N; j++)
             {
                 if (matrix[i][j])
                 {
-                    cout << " - " << matrix[i][j] << " - ";
-                    node_connections.push_back(VertexWeight(j, matrix[i][j]));
+                    node_connections.push_back(Vertex(j, matrix[i][j]));
                 }
-                cout << endl;
+                cout << " - " << matrix[i][j] << " - ";
             }
+            cout << endl;
             this->nodes.push_back(node_connections);
         }
     }
@@ -74,13 +75,13 @@ int ListGraph::generateRandom(size_t N)
         cout << "Generate random graph" << endl;
         for (size_t i = 0; i < N; i++)
         {
-            vector<VertexWeight> node_connections;
+            vector<Vertex> node_connections;
             for(size_t j = 0; j < N; j++)
             {
                 if (i == j) continue;  // no loops
                 else if ( prob() < density )
                 {
-                    VertexWeight v = VertexWeight(j, distance());
+                    Vertex v = Vertex(j, distance());
                     node_connections.push_back( v ); // Add connection from i to j node with distance
                 }
             }
@@ -114,37 +115,38 @@ void ListGraph::printGraph()
 bool ListGraph::isConnected()
 {
     bool isconnected = false;
-    vector<unsigned int> openset;
-    vector<unsigned int> closedset;
+    std::set<unsigned int> openset;
+    std::set<unsigned int> closedset;
 
-    for(auto const& n: openset)
-        cout << n << " - ";
-    cout << endl;
+    unsigned int connected = 0;     // Start from '0' node - reference to that node connection list
+    openset.insert(connected);      // Place node "0" in open set
 
-    unsigned int connected = 0;    // Start from '0' node - reference to that node connection list
-    openset.push_back(connected);
-
-    while (this->nodes[connected].size() != 0 && closedset.size() < this->nodes.size())   // empty node or all nodes reached
+    do
     {
-        for(vector<VertexWeight>::iterator it = this->nodes[connected].begin(); it != this->nodes[connected].end(); ++it)
+        if (this->nodes[connected].empty()) // Vertex without any edges
+            break;
+
+        for(Vertex node: this->nodes[connected])  // For every vertex reachable from 'connected' node
+        {   // Add all reachable nodes to open set if they are not in closed set yet
+            if (closedset.find(node.vertex) == closedset.end())
+            {
+                openset.insert(node.vertex);    // Add to open set if not in closed set
+            }
+        }
+        closedset.insert(connected);
+        openset.erase(connected);
+        if (!openset.empty())
         {
-            bool isclosed = false;
-            for(auto closed: closedset) {
-                if (closed == connected) {
-                    isclosed = true;
-                    break;
-                }
-            }
-            if (isclosed) openset[(*it).id()] = true;
+            connected = *openset.begin(); // Take next node from open set
         }
-        closedset[connected] = true;
-        openset[connected] = false;
-        for (unsigned int i=0; i < openset.size(); ++i){
-            if (openset[i]){
-                connected = i;
-                break;
-            }
+        else if (closedset.size() == this->nodes.size())
+        {
+            isconnected = true;
+            break;
         }
+        else
+            break;
     }
+    while ( true );   // empty node or all nodes reached
     return isconnected;
 }

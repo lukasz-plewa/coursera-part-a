@@ -17,13 +17,14 @@ inline double prob() { double p = (static_cast<double>(rand() % 1000) / 1000.0);
 inline unsigned int distance() { return (rand() % 100); }
 
 // Declaration of special type for handling definition of edge: vertex and weight value pair
-class VertexWeight {
+class Vertex {
     unsigned int vertex, weight;    // An vertex to which this edge connects to and weight of this edge
 public:
-    VertexWeight() : vertex(0), weight(0) {}
-    VertexWeight(unsigned int v, unsigned int w) : vertex(v), weight(w) {}
+    Vertex() : vertex(0), weight(0) {}
+    Vertex(unsigned int v, unsigned int w) : vertex(v), weight(w) {}
     unsigned int id() { return vertex; }
-    friend std::ostream& operator<< (std::ostream &out, const VertexWeight& edge);
+    friend std::ostream& operator<< (std::ostream &out, const Vertex& edge);
+    friend class ListGraph;
 };
 
 /*
@@ -34,7 +35,7 @@ public:
   4 -> 2 -> 3
  */
 class ListGraph {
-    std::vector< std::vector<VertexWeight> >nodes;    // Vector of vectors for graph representation as a list of connections
+    std::vector< std::vector<Vertex> >nodes;    // Vector of vectors for graph representation as a list of connections
 public:
     ListGraph() { srand(time(0)); };
     ListGraph(unsigned int** matrix, unsigned int N);

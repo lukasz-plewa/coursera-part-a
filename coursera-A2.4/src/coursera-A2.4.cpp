@@ -11,14 +11,11 @@
 
 using namespace std;
 
-const unsigned int N = 10;
-
-unsigned int** graphLoad(const unsigned int table[][N]);    // Load from static array
-unsigned int** graphGenerate(size_t size);                  // Generate random matrix
-
 // This is matrix representation of weighted undirected graph (could be also read from file)
 unsigned int** graphinput;
 
+#if 0
+const unsigned int N = 10;
 unsigned int c[N][N] = {
         {0,  6,  10, 0,  0,  0,  0,  0,  0,  0,  },
         {6,  0,  12, 11, 14, 0,  0,  0,  0,  0,  },
@@ -31,21 +28,37 @@ unsigned int c[N][N] = {
         {0,  0,  0,  0,  6,  12, 16, 0,  0,  13, },
         {0,  0,  0,  0,  0,  0,  6,  8,  13, 0,  },
 };
+#else
+const unsigned int N = 7;
+// Graf z rysunku
+unsigned int manual[N][N] = {
+        /*0  1  2  3  4  5  6 */
+        { 0, 1, 1, 1, 0, 0, 0 },
+        { 1, 0, 0, 0, 0, 1, 0 },
+        { 1, 0, 0, 0, 1, 1, 0 },
+        { 1, 0, 0, 0, 0, 1, 1 },
+        { 0, 0, 1, 0, 0, 0, 1 },
+        { 0, 1, 1, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 1, 0, 0 },
+};
+#endif
+
+unsigned int** graphLoad(const unsigned int table[][N]);    // Load from static array
+unsigned int** graphGenerate(size_t size);                  // Generate random matrix
 
 int main() {
-#if 0
+    ListGraph graph;    // New empty graph object
+#if 1
 //    cout << "Load weighted graph from connectivity matrix:" << endl;
 //    graphinput = graphGenerate(N);
 //    graphinput = graphLoad(c);
-#endif
-
-    ListGraph graph;    // New empty graph object
-#if 0
+    graphinput = graphLoad(manual);
     cout << "Load graph from connectivity matrix" << endl;
     graph.loadFromMatrix(graphinput, N);
-#endif
+#else
     graph.generateRandom(20);
     graph.generateRandom(30);
+#endif
     graph.printGraph();
     cout << "This graph " << (graph.isConnected() ? "is" : "is not") << " connected" << endl;
 
