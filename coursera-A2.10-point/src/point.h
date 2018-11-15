@@ -19,8 +19,9 @@ class Point
 {
     double x, y;
 public:
-    Point() { this->x = this->y = 0.0; }    // default constructor
+    Point() : x(0.0), y(0.0 ) {}            // default constructor with initializer list, can initialize also const member
     Point(double ix, double iy) : x(ix), y(iy) {}
+
     double getx() { return x; }             // accessor method
     double gety() { return y; }
     void setx(double value) { x = value; } // mutator method

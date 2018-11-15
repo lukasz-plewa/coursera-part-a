@@ -21,6 +21,7 @@ vertex, vertices - wierzchołek, wierzchołki
 --------------------------------------------------------------------------------
 - Grafy
   - complete graph with 4 nodes: K4 - naming convention
+  - complete graph - every ode is connected to every other
   - degree of node: how many edges goes from that node (vertex). In K4 every node is degree of 3
   - seven bridges of königsberg - probalem, który Leonhard Euler udowodnił dzięki teorii grafów. Dlatego algorytm przejścia przez wszystkie krawędzie dokładnie raz, nazywany cyklem Eulerowskim
 - Najpopularniejsze reprezentacje grafów:

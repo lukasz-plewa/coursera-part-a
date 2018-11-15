@@ -7,27 +7,19 @@
 //============================================================================
 
 #include <iostream>
-#include <vector>
+#include "list_graph.h"
 
 using namespace std;
 
 const unsigned int N = 10;
 
-// Declaration of special type for handling definition of edge: vertex and weight value pair
-class VertexWeight {
-    unsigned int vertex;    // An vertex to which this edge connects to
-    unsigned int weight;    // Weight value of this edge
-public:
-    VertexWeight(unsigned int v, unsigned int w):vertex(v), weight(w) {}
-    friend ostream& operator<< (ostream &out, const VertexWeight& edge);
-};
-
-ostream& operator<< (ostream &out, const VertexWeight &edge) {
-    out << "(" << edge.vertex << "," << edge.weight << ")"; return out;
-}
+unsigned int** graphLoad(const unsigned int table[][N]);    // Load from static array
+unsigned int** graphGenerate(size_t size);                  // Generate random matrix
 
 // This is matrix representation of weighted undirected graph (could be also read from file)
-const unsigned int graphinput[N][N] = {
+unsigned int** graphinput;
+
+unsigned int c[N][N] = {
         {0,  6,  10, 0,  0,  0,  0,  0,  0,  0,  },
         {6,  0,  12, 11, 14, 0,  0,  0,  0,  0,  },
         {10, 12, 0,  12, 0,  0,  8,  16, 0,  0,  },
@@ -40,28 +32,62 @@ const unsigned int graphinput[N][N] = {
         {0,  0,  0,  0,  0,  0,  6,  8,  13, 0,  },
 };
 
-
 int main() {
-    cout << "Load weighted graph from connectivity matrix:" << endl;
+#if 0
+//    cout << "Load weighted graph from connectivity matrix:" << endl;
+//    graphinput = graphGenerate(N);
+//    graphinput = graphLoad(c);
+#endif
 
-    vector< vector<VertexWeight> >nodes;    // Vector of vectors for graph representation as a list of connections
-    for (unsigned int i = 0; i < N; i ++)
-    {
-        vector<VertexWeight> node_connections;
-        for (unsigned int j = 0; j < N; j++)
-        {
-            if (graphinput[i][j])
-                node_connections.push_back(VertexWeight(j, graphinput[i][j]));
-        }
-        nodes.push_back(node_connections);
-    }
+    ListGraph graph;    // New empty graph object
+#if 0
+    cout << "Load graph from connectivity matrix" << endl;
+    graph.loadFromMatrix(graphinput, N);
+#endif
+    graph.generateRandom(20);
+    graph.generateRandom(30);
+    graph.printGraph();
+    cout << "This graph " << (graph.isConnected() ? "is" : "is not") << " connected" << endl;
 
-    cout << "Now print graph represented as a list:" << endl;
-    for ( int i = 0; i < static_cast<int>(nodes.size()); i++)
-    {
-        cout << endl << " " << i;
-        for ( int j = 0; j < static_cast<int>(nodes[i].size()); j++)
-            cout << " -> " << nodes[i][j];
-    }
     return 0;
 }
+
+// =============================================================================
+
+// Generate 2D matrix as weighted graph representation with random values
+unsigned int** graphGenerate(size_t size)
+{
+    srand(time(0));
+    unsigned int** randomGraph = new unsigned int*[size];
+    for (size_t i = 0; i < size; i++)
+    {
+        randomGraph[i] = new unsigned int[size];
+        // heap created 2D array of unsigned int
+        for(size_t j = 0; j < size; j++)
+        {
+            if (i == j)
+                randomGraph[i][j] = 0;  // no loops
+            else
+                randomGraph[i][j] = randomGraph[j][i] = (prob() < 0.19 ? distance() : 0);
+        }
+    }
+    return randomGraph;
+}
+
+// Loads graph from file or from static matrix
+unsigned int** graphLoad(const unsigned int table[][N])
+{
+    unsigned int** graph = new unsigned int*[N];
+    for (size_t i = 0; i < N; i++)
+    {
+        graph[i] = new unsigned int[N];
+        // heap created 2D array of unsigned int
+        for(size_t j = 0; j < N; j++)
+        {
+            graph[i][j] = table[i][j];
+        }
+    }
+    return graph;
+}
+
+// =============================================================================
