@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <set>
+#include <algorithm>
+#include <iomanip>
 #include "list_graph.h"
 
 using namespace std;
@@ -17,7 +19,7 @@ using namespace std;
 const double density = 0.19;
 
 ostream& operator<< (ostream &out, const Vertex &edge) {
-    out << "(" << edge.vertex << "," << edge.weight << ")"; return out;
+    out << "(" << std::setw(2) << edge.vertex << "," << std::setw(2) << edge.weight << ")"; return out;
 }
 
 ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
@@ -45,7 +47,7 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
     {
         for (size_t i = 0; i < N; i++)
         {
-            cout << "reading connections for node " << i << endl;
+            cout << i << " |  ";
             vector<Vertex> node_connections;
             for (size_t j = 0; j < N; j++)
             {
@@ -53,7 +55,7 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
                 {
                     node_connections.push_back(Vertex(j, matrix[i][j]));
                 }
-                cout << " - " << matrix[i][j] << " - ";
+                cout << " " << matrix[i][j] << " ";
             }
             cout << endl;
             this->nodes.push_back(node_connections);
@@ -102,9 +104,11 @@ void ListGraph::printGraph()
     {
         for ( int i = 0; i < static_cast<int>(this->nodes.size()); i++)
         {
-            cout << endl << " " << i;
+            cout << endl;
+            cout.width(3);
+            cout << i << " -> ";
             for ( int j = 0; j < static_cast<int>(this->nodes[i].size()); j++)
-                cout << "\t-> " << this->nodes[i][j];
+                cout << this->nodes[i][j] << ", ";
         }
         cout << endl;
     }
@@ -112,6 +116,52 @@ void ListGraph::printGraph()
         cout << "Graph is empty." << endl;
 }
 
+// Print graph on screen as connectivity matrix
+void ListGraph::printGraph(MatrixStyle style)
+{
+    unsigned int size = this->nodes.size();
+    if (size == 0)
+    {
+        cout << "Graph is empty." << endl;
+        return;
+    }
+
+    for ( unsigned int i = 0; i < size; i++)
+    {
+        cout.width(2);
+        cout << endl << i << "|  ";
+        vector<Vertex>::iterator it = this->nodes[i].begin();
+        for ( unsigned int j = 0; j < size; j++)
+        {
+            if (it != this->nodes[i].end() && it->vertex == j)
+            {
+                cout << " ";
+                if(style == MatrixStyle::MATRIX_WEIGHT)
+                {
+                    cout.width(2);
+                    cout << it->weight << " ";
+                }
+                else
+                {
+                    cout << "1 ";
+                }
+                it++;
+            }
+            else
+            {
+                if(style == MatrixStyle::MATRIX_ARRAY)
+                    cout << " 0 ";
+                else if(style == MatrixStyle::MATRIX_WEIGHT)
+                    cout << "  - ";
+                else
+                    cout << " - ";
+            }
+        }
+    }
+    cout << endl;
+}
+
+// Checks if graph is connected (all nodes are reachable)
 bool ListGraph::isConnected()
 {
     bool isconnected = false;
@@ -126,27 +176,29 @@ bool ListGraph::isConnected()
         if (this->nodes[connected].empty()) // Vertex without any edges
             break;
 
-        for(Vertex node: this->nodes[connected])  // For every vertex reachable from 'connected' node
+        for(Vertex node: this->nodes[connected])    // For every vertex reachable from 'connected' node
         {   // Add all reachable nodes to open set if they are not in closed set yet
             if (closedset.find(node.vertex) == closedset.end())
-            {
-                openset.insert(node.vertex);    // Add to open set if not in closed set
-            }
+                openset.insert(node.vertex);        // Add to open set if not in closed set
         }
         closedset.insert(connected);
         openset.erase(connected);
-        if (!openset.empty())
-        {
-            connected = *openset.begin(); // Take next node from open set
+        if (!openset.empty()) {
+            connected = *openset.begin();           // Take next node from open set
         }
-        else if (closedset.size() == this->nodes.size())
-        {
+        else if (closedset.size() == this->nodes.size()) {
             isconnected = true;
             break;
         }
-        else
+        else    // No nodes available in open set
             break;
     }
     while ( true );   // empty node or all nodes reached
     return isconnected;
+}
+
+// Returns distance and prints sequence of nodes
+unsigned int ListGraph::pathDijkstra()
+{
+    return 0;
 }

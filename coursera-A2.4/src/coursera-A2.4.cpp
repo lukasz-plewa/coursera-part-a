@@ -12,11 +12,11 @@
 using namespace std;
 
 // This is matrix representation of weighted undirected graph (could be also read from file)
-unsigned int** graphinput;
+unsigned int** graphinput = nullptr;
 
-#if 0
+#if 1
 const unsigned int N = 10;
-unsigned int c[N][N] = {
+unsigned int manual[N][N] = {
         {0,  6,  10, 0,  0,  0,  0,  0,  0,  0,  },
         {6,  0,  12, 11, 14, 0,  0,  0,  0,  0,  },
         {10, 12, 0,  12, 0,  0,  8,  16, 0,  0,  },
@@ -51,7 +51,6 @@ int main() {
 #if 1
 //    cout << "Load weighted graph from connectivity matrix:" << endl;
 //    graphinput = graphGenerate(N);
-//    graphinput = graphLoad(c);
     graphinput = graphLoad(manual);
     cout << "Load graph from connectivity matrix" << endl;
     graph.loadFromMatrix(graphinput, N);
@@ -61,6 +60,10 @@ int main() {
 #endif
     graph.printGraph();
     cout << "This graph " << (graph.isConnected() ? "is" : "is not") << " connected" << endl;
+
+    graph.printGraph(MatrixStyle::MATRIX_CONNECTIONS_ONLY);
+    graph.printGraph(MatrixStyle::MATRIX_ARRAY);
+    graph.printGraph(MatrixStyle::MATRIX_WEIGHT);
 
     return 0;
 }

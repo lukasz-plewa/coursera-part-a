@@ -18,6 +18,10 @@ vertex, vertices - wierzchołek, wierzchołki
       type operator++ (type& v, int) { type temp = v; v = temp+1; return temp; }
   - binary operator 
     operator + (type& val1, type& val2) { return (val1.x + val2.x); }
+    
+- nullptr   - new keyword (type safe) for NULL pointer, or '0' pointer
+- deep vs shallow copy
+
 --------------------------------------------------------------------------------
 - Grafy
   - complete graph with 4 nodes: K4 - naming convention
