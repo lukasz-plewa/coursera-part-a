@@ -14,7 +14,7 @@
 #include <ctime>
 
 inline double prob() { double p = (static_cast<double>(rand() % 1000) / 1000.0); return p; }
-inline unsigned int distance() { return (static_cast<unsigned int>(static_cast<double>(rand() % 99) + 0.5)); }
+inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 enum class MatrixStyle {MATRIX_ARRAY, MATRIX_CONNECTIONS_ONLY, MATRIX_WEIGHT};
 
@@ -39,17 +39,20 @@ public:
  */
 class ListGraph {
     std::vector< std::vector<Vertex> >nodes;    // Vector of vectors for graph representation as a list of connections
+    unsigned int edgeCnt;                       // Number of edges
+    unsigned int nodeCnt;                       // Number of nodes
+    double density;
 public:
-    ListGraph() { srand(time(0)); };
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) { srand(time(0)); }
     ListGraph(unsigned int** matrix, unsigned int N);       // Constructor from simple 2D array
 
     // Methods
     int loadFromMatrix(unsigned int** matrix, size_t N);
-    int generateRandom(size_t size);
+    int generateRandom(size_t N, double dens, unsigned int distanceRange);
     void printGraph();
     void printGraph(MatrixStyle style);
     bool isConnected();                 // Launch the "is connected" algorithm on graph
-    unsigned int pathDijkstra(); // Returns distance and sequence of nodes
+    int Dijkstra(unsigned int source); // Returns distance and sequence of nodes
 };
 
 #endif /* LIST_GRAPH_H_ */

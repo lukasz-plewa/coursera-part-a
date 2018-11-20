@@ -16,6 +16,7 @@ unsigned int** graphinput = nullptr;
 
 #if 1
 const unsigned int N = 10;
+// This graph can be checked on http://graphonline.ru/en/?graph=KXdTUOPYKsvARtQu
 unsigned int manual[N][N] = {
         {0,  6,  10, 0,  0,  0,  0,  0,  0,  0,  },
         {6,  0,  12, 11, 14, 0,  0,  0,  0,  0,  },
@@ -32,14 +33,14 @@ unsigned int manual[N][N] = {
 const unsigned int N = 7;
 // Graf z rysunku
 unsigned int manual[N][N] = {
-        /*0  1  2  3  4  5  6 */
-        { 0, 1, 1, 1, 0, 0, 0 },
-        { 1, 0, 0, 0, 0, 1, 0 },
-        { 1, 0, 0, 0, 1, 1, 0 },
-        { 1, 0, 0, 0, 0, 1, 1 },
-        { 0, 0, 1, 0, 0, 0, 1 },
-        { 0, 1, 1, 1, 0, 0, 0 },
-        { 0, 0, 0, 1, 1, 0, 0 },
+        /*   0  1  2  3  4  5  6 */
+   /* 0 */ { 0, 2, 3, 8, 0, 0, 0 },
+   /* 1 */ { 2, 0, 0, 0, 0, 4, 0 },
+   /* 2 */ { 3, 0, 0, 0, 5, 2, 0 },
+   /* 3 */ { 8, 0, 0, 0, 0, 1, 7 },
+   /* 4 */ { 0, 0, 5, 0, 0, 0, 6 },
+   /* 5 */ { 0, 4, 2, 1, 0, 0, 0 },
+   /* 6 */ { 0, 0, 0, 7, 6, 0, 0 },
 };
 #endif
 
@@ -47,23 +48,27 @@ unsigned int** graphLoad(const unsigned int table[][N]);    // Load from static 
 unsigned int** graphGenerate(size_t size);                  // Generate random matrix
 
 int main() {
-    ListGraph graph;    // New empty graph object
-#if 1
+    ListGraph* pGraph = nullptr;    // New empty graph object
+#if 0
 //    cout << "Load weighted graph from connectivity matrix:" << endl;
 //    graphinput = graphGenerate(N);
     graphinput = graphLoad(manual);
     cout << "Load graph from connectivity matrix" << endl;
-    graph.loadFromMatrix(graphinput, N);
+    pGraph->loadFromMatrix(graphinput, N);
 #else
-    graph.generateRandom(20);
-    graph.generateRandom(30);
+    pGraph->generateRandom(7, 0.19, 10);
+//    graph.generateRandom(30);
 #endif
-    graph.printGraph();
-    cout << "This graph " << (graph.isConnected() ? "is" : "is not") << " connected" << endl;
+    pGraph->printGraph();
+    bool connected = pGraph->isConnected();
+    cout << "This graph " << (connected ? "is" : "is not") << " connected" << endl;
 
-    graph.printGraph(MatrixStyle::MATRIX_CONNECTIONS_ONLY);
-    graph.printGraph(MatrixStyle::MATRIX_ARRAY);
-    graph.printGraph(MatrixStyle::MATRIX_WEIGHT);
+//    pGraph->printGraph(MatrixStyle::MATRIX_CONNECTIONS_ONLY);
+//    pGraph->printGraph(MatrixStyle::MATRIX_ARRAY);
+    pGraph->printGraph(MatrixStyle::MATRIX_WEIGHT);
+
+    if (connected) pGraph->Dijkstra(0);
+    else cout << "Dijkstra not launched on not connected graph" << endl;
 
     return 0;
 }
@@ -84,7 +89,7 @@ unsigned int** graphGenerate(size_t size)
             if (i == j)
                 randomGraph[i][j] = 0;  // no loops
             else
-                randomGraph[i][j] = randomGraph[j][i] = (prob() < 0.19 ? distance() : 0);
+                randomGraph[i][j] = randomGraph[j][i] = (prob() < 0.19 ? distance(20) : 0);
         }
     }
     return randomGraph;

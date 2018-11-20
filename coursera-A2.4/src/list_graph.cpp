@@ -12,6 +12,7 @@
 #include <set>
 #include <algorithm>
 #include <iomanip>
+#include <climits>
 #include "list_graph.h"
 
 using namespace std;
@@ -70,25 +71,30 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
 }
 
 // Generate weighted and undirected graph with list representation
-int ListGraph::generateRandom(size_t N)
+int ListGraph::generateRandom(size_t N, double dens, unsigned int distanceRange)
 {
     if (this->nodes.size() == 0)
     {
-        cout << "Generate random graph" << endl;
         for (size_t i = 0; i < N; i++)
         {
             vector<Vertex> node_connections;
-            for(size_t j = 0; j < N; j++)
-            {
-                if (i == j) continue;  // no loops
-                else if ( prob() < density )
-                {
-                    Vertex v = Vertex(j, distance());
-                    node_connections.push_back( v ); // Add connection from i to j node with distance
-                }
-            }
             this->nodes.push_back(node_connections);
         }
+        for (size_t i = 0; i < N; i++)
+        {
+            for(size_t j = (i+1); j < N; j++)
+            {
+                if ( prob() < dens )
+                {
+                    unsigned int d = distance(distanceRange);
+                    Vertex v = Vertex(j, d); // Graph must be undirected
+                    Vertex b = Vertex(i, d); // so add edge connections to both vertices
+                    nodes[i].push_back( v ); // Add connection from i to j node with distance
+                    nodes[j].push_back( b ); // Add connection from j to i node with distance
+                }
+            }
+        }
+        this->nodeCnt = N;
     }
     else
     {
@@ -128,18 +134,18 @@ void ListGraph::printGraph(MatrixStyle style)
 
     for ( unsigned int i = 0; i < size; i++)
     {
-        cout.width(2);
-        cout << endl << i << "|  ";
+//        cout.width(2);
+//        cout << endl << i << "|  ";
         vector<Vertex>::iterator it = this->nodes[i].begin();
         for ( unsigned int j = 0; j < size; j++)
         {
             if (it != this->nodes[i].end() && it->vertex == j)
             {
-                cout << " ";
                 if(style == MatrixStyle::MATRIX_WEIGHT)
                 {
                     cout.width(2);
-                    cout << it->weight << " ";
+                    cout << it->weight;
+                    cout << ((it != (this->nodes[i].end() - 1)) ? ", " : "\n");
                 }
                 else
                 {
@@ -152,7 +158,7 @@ void ListGraph::printGraph(MatrixStyle style)
                 if(style == MatrixStyle::MATRIX_ARRAY)
                     cout << " 0 ";
                 else if(style == MatrixStyle::MATRIX_WEIGHT)
-                    cout << "  - ";
+                    cout << ((it != (this->nodes[i].end() - 1)) ? "0, " : "\n");
                 else
                     cout << " - ";
             }
@@ -198,7 +204,53 @@ bool ListGraph::isConnected()
 }
 
 // Returns distance and prints sequence of nodes
-unsigned int ListGraph::pathDijkstra()
+int ListGraph::Dijkstra(unsigned int source)
 {
+    if ( source >= this->nodes.size())
+    {
+        cout << "Error! " << source << " node number is not in the graph!" <<
+                "This graph has " << this->nodes.size() << " elements (verticles)" << endl;
+        return -1;
+    }
+
+    // http://www.algorytm.org/algorytmy-grafowe/algorytm-dijkstry.html
+    // Initialize data structures
+    vector<unsigned int> distances(this->nodes.size(), UINT_MAX);
+    set<unsigned int> Q;
+    for (unsigned int i=0; i<this->nodes.size(); ++i)
+        Q.insert(i);
+    for (auto v: this->nodes[source])
+        distances[v.vertex] = v.weight; // Initial distances from source node to connected nodes
+    distances[source] = 0;              // Distance to starting node is zero
+    Q.erase(source);                    // source node is calculated
+    unsigned int current = source;
+    unsigned int closest;
+
+    while(!Q.empty())
+    {
+        // 1. Find smallest not revealed distance
+        closest = UINT_MAX;
+        for (unsigned int i = 0; i < this->nodes.size(); ++i)
+        {
+            if ( (Q.find(i) != Q.end()) && distances[i] < closest)
+            {
+                closest = distances[i];
+                current = i;
+            }
+        }
+        cout << "Found closest in Q " << current << ": " << distances[current] << endl;
+        Q.erase(current);
+        cout << "Current [" << current << "] erased from Q" << endl;
+        for (auto v: this->nodes[current])
+        {
+            if (distances[v.vertex] > (distances[current] + v.weight)) {
+                distances[v.vertex] = (distances[current] + v.weight);
+                cout << "\tUpdated distance to " << v.vertex << " to value " << distances[v.vertex] << endl;
+            }
+        }
+    }
+    cout << "Dijstra solution is:" << endl;
+    for (unsigned int i = 0; i < distances.size(); ++i)
+        cout << i << ": " << distances[i] << endl;
     return 0;
 }
