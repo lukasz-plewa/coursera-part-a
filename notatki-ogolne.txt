@@ -64,9 +64,31 @@ http://graphonline.ru/en/?graph=KXdTUOPYKsvARtQu
 
 --------------------------------------------------------------------------------
 
+MST
+
+* Homework3:
+Find MSP when edges must be of specified color or pair of colors
+
+class enum color {RED, BLUE, GREEN}
 
 
+* Jarnik-Prim Minimum Spanning Tree (czeski matematyk, opisał w 1930)
+- if there is no connection from one node to the rest of the graph, then we have disconnected (disjoined) graph
+  - graph disconnected: there is no spanning tree
+  - graph connected (every node can reach every none in the graph)
+  - Spanning tree can be paunched only for connected graph
+  - Avoid loops
+  - for N nodes graph, the MST cost would be N-1 if every edge has unit cost 1
+  
 
+* Jarnik-Prim algo:
+ - Start at A
+ - Nearest is E
+ - Pick nearest next node - until
+ - All nodes in graph or no more nodes to connect
+4.3 - pseudo code in 4:30
+
+* Kruskal's Algorithm
 
 
 

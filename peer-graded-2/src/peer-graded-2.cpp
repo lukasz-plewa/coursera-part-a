@@ -39,7 +39,7 @@ class ListGraph {
     unsigned int nodeCnt;                       // Number of nodes
     double density;
 public:
-    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) { srand(time(0)); }
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}
 
     // Methods
     int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
@@ -219,6 +219,7 @@ int main() {
     cout << "Graph and Dijkstra implementation" << endl; // prints Graph and Dijkstra implementation
     ListGraph* pGraph = nullptr;    // New empty graph object pointer
     unsigned int averageDistance = 0, ret = 0;
+    srand(time(0));
 
 // Compute for a set of randomly generated graphs an average shortest path.
     for (int i=0; i < numComputations; ++i)

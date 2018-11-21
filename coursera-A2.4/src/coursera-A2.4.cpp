@@ -49,6 +49,9 @@ unsigned int** graphGenerate(size_t size);                  // Generate random m
 
 int main() {
     ListGraph* pGraph = nullptr;    // New empty graph object
+    srand(time(0));
+
+    pGraph = new ListGraph();
 #if 0
 //    cout << "Load weighted graph from connectivity matrix:" << endl;
 //    graphinput = graphGenerate(N);
@@ -56,8 +59,7 @@ int main() {
     cout << "Load graph from connectivity matrix" << endl;
     pGraph->loadFromMatrix(graphinput, N);
 #else
-    pGraph->generateRandom(7, 0.19, 10);
-//    graph.generateRandom(30);
+    pGraph->generateRandom(20, 0.19, 10);
 #endif
     pGraph->printGraph();
     bool connected = pGraph->isConnected();
@@ -69,6 +71,8 @@ int main() {
 
     if (connected) pGraph->Dijkstra(0);
     else cout << "Dijkstra not launched on not connected graph" << endl;
+
+    delete pGraph;
 
     return 0;
 }

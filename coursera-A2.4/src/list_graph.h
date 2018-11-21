@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <ctime>
 
-inline double prob() { double p = (static_cast<double>(rand() % 1000) / 1000.0); return p; }
+inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)); }
 inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 enum class MatrixStyle {MATRIX_ARRAY, MATRIX_CONNECTIONS_ONLY, MATRIX_WEIGHT};
@@ -38,21 +38,24 @@ public:
   4 -> 2, 3
  */
 class ListGraph {
-    std::vector< std::vector<Vertex> >nodes;    // Vector of vectors for graph representation as a list of connections
+    std::vector< std::vector<Vertex> >graph;    // Vector of vectors for graph representation as a list of connections
     unsigned int edgeCnt;                       // Number of edges
     unsigned int nodeCnt;                       // Number of nodes
     double density;
 public:
-    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) { srand(time(0)); }
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}
     ListGraph(unsigned int** matrix, unsigned int N);       // Constructor from simple 2D array
 
     // Methods
     int loadFromMatrix(unsigned int** matrix, size_t N);
-    int generateRandom(size_t N, double dens, unsigned int distanceRange);
+    int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
     void printGraph();
     void printGraph(MatrixStyle style);
-    bool isConnected();                 // Launch the "is connected" algorithm on graph
-    int Dijkstra(unsigned int source); // Returns distance and sequence of nodes
+    unsigned int V() { return nodeCnt; }
+    unsigned int E() { return edgeCnt; }
+    unsigned int D() { return density; }
+    bool isConnected();                             // Launch the "is connected" algorithm on graph
+    unsigned int Dijkstra(unsigned int source);
 };
 
 #endif /* LIST_GRAPH_H_ */
