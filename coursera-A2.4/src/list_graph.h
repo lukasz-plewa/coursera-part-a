@@ -9,6 +9,7 @@
 #define LIST_GRAPH_H_
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
@@ -19,17 +20,35 @@ inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 enum class MatrixStyle {MATRIX_ARRAY, MATRIX_CONNECTIONS_ONLY, MATRIX_WEIGHT};
 
 // Declaration of special type for handling definition of edge: vertex and weight value pair
-class Vertex {
-    unsigned int vertex, weight;    // An vertex to which this edge connects to and weight of this edge
+class Edge {
+    unsigned int from, vertex, weight;    // An vertex to which this edge connects to and weight of this edge
 public:
-    Vertex() : vertex(0), weight(0) {}                                  // default constructor
-    Vertex(unsigned int v, unsigned int w) : vertex(v), weight(w) {}
-    Vertex(const Vertex& v) { vertex = v.vertex; weight = v.weight; }   // copy constructor
+    Edge() : from(0), vertex(0), weight(0) {}                                  // default constructor
+    Edge(unsigned int f, unsigned int v, unsigned int w) : from(f), vertex(v), weight(w) {}
+    Edge(const Edge& v) { from = v.from; vertex = v.vertex; weight = v.weight; }   // copy constructor
 
-    friend std::ostream& operator<< (std::ostream &out, const Vertex& edge);
+    unsigned int getF() { return from; }
+    unsigned int getV() { return vertex; }
+    unsigned int getW() { return weight; }
+    friend std::ostream& operator<< (std::ostream &out, const Edge& edge);
+    bool operator<(const Edge & right) const
+    {   // Compare weight only for different edges: needed by std::set<Edge>
+        if ((this->from != right.from) || (this->vertex != right.vertex))
+            return (this->weight <= right.weight);
+        return false;
+
+    }
     friend class ListGraph;
+    friend class EdgeCompare;
 };
 
+class EdgeCompare{
+public:
+    bool operator()( const Edge& lhs, const Edge& rhs)
+    {
+            return (lhs.weight < rhs.weight);
+    }
+};
 /*
  * Definition of object class which is handling weighted graph represented as a list of nodes:
   1 -> 1, 2, 3, 4
@@ -38,13 +57,15 @@ public:
   4 -> 2, 3
  */
 class ListGraph {
-    std::vector< std::vector<Vertex> >graph;    // Vector of vectors for graph representation as a list of connections
+    std::vector< std::vector<Edge> >graph;    // Vector of vectors for graph representation as a list of connections
     unsigned int edgeCnt;                       // Number of edges
     unsigned int nodeCnt;                       // Number of nodes
     double density;
 public:
-    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}
-    ListGraph(unsigned int** matrix, unsigned int N);       // Constructor from simple 2D array
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}   // Create empty graph
+    ListGraph(unsigned int n);                              // Create graph with n nodes without any edges
+    ListGraph(std::ifstream& inFile);                       // Create graph defined in file as list of edges
+    ListGraph(unsigned int** matrix, unsigned int N);       // Create graph from simple 2D array
 
     // Methods
     int loadFromMatrix(unsigned int** matrix, size_t N);
@@ -54,8 +75,11 @@ public:
     unsigned int V() { return nodeCnt; }
     unsigned int E() { return edgeCnt; }
     unsigned int D() { return density; }
+    void Add(unsigned int from, unsigned int to, unsigned int weight); // Adds an edge if it is not there
+    void Add(Edge &edge);
     bool isConnected();                             // Launch the "is connected" algorithm on graph
     unsigned int Dijkstra(unsigned int source);
+    unsigned int MST(unsigned int source);
 };
 
 #endif /* LIST_GRAPH_H_ */

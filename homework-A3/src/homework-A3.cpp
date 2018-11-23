@@ -1,22 +1,78 @@
-/*
- * list_graph.cpp
- *
- *  Created on: Nov 14, 2018
- *      Author: L.Plewa
- */
+//============================================================================
+// Name        : homework-A3.cpp
+// Author      : Lukasz Plewa
+// Version     :
+// Copyright   : Copyright Lukasz Plewa
+// Description : Graph as nodes list with Dijkstra and MST implementation
+//============================================================================
 
-
-
-
+#include <iostream>
+#include <fstream>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 #include <set>
-#include <queue>
 #include <algorithm>
 #include <iomanip>
 #include <climits>
-#include "list_graph.h"
 
 using namespace std;
+
+inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)); }
+inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
+
+
+// Declaration of special type for handling definition of edge: vertex and weight value pair
+class Edge {
+    unsigned int from, vertex, weight;    // An vertex to which this edge connects to and weight of this edge
+public:
+    Edge() : from(0), vertex(0), weight(0) {}                                  // default constructor
+    Edge(unsigned int f, unsigned int v, unsigned int w) : from(f), vertex(v), weight(w) {}
+    Edge(const Edge& v) { from = v.from; vertex = v.vertex; weight = v.weight; }   // copy constructor
+
+    friend std::ostream& operator<< (std::ostream &out, const Edge& edge);
+    friend class ListGraph;
+    friend class EdgeCompare;
+};
+
+class EdgeCompare{
+public:
+    bool operator()( const Edge& lhs, const Edge& rhs)
+    {
+            return (lhs.weight < rhs.weight);
+    }
+};
+/*
+ * Definition of object class which is handling weighted graph represented as a list of nodes:
+  1 -> 1, 2, 3, 4
+  2 -> 1
+  3 -> 2, 4
+  4 -> 2, 3
+ */
+class ListGraph {
+    std::vector< std::vector<Edge> >graph;    // Vector of vectors for graph representation as a list of connections
+    unsigned int edgeCnt;                       // Number of edges
+    unsigned int nodeCnt;                       // Number of nodes
+    double density;
+public:
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}   // Create empty graph
+    ListGraph(unsigned int n);                              // Create graph with n nodes without any edges
+    ListGraph(std::ifstream& inFile);                       // Create graph defined in file as list of edges
+    ListGraph(unsigned int** matrix, unsigned int N);       // Create graph from simple 2D array
+
+    // Methods
+    int loadFromMatrix(unsigned int** matrix, size_t N);
+    int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
+    void printGraph();
+    unsigned int V() { return nodeCnt; }
+    unsigned int E() { return edgeCnt; }
+    unsigned int D() { return density; }
+    void Add(unsigned int from, unsigned int to, unsigned int weight); // Adds an edge if it is not there
+    void Add(Edge &edge);
+    bool isConnected();                             // Launch the "is connected" algorithm on graph
+    unsigned int Dijkstra(unsigned int source);
+    unsigned int MST(unsigned int source);
+};
 
 const double density = 0.19;
 const unsigned int nodes_limit = 10000;
@@ -141,7 +197,7 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
         graph[from].push_back(Edge(from, to, weight));
         graph[to].push_back(Edge(to, from, weight));
         edgeCnt++;
-        cout << "Add (" << from << " - " << to << ")" << weight << endl;
+//        cout << "Add (" << from << " - " << to << ")" << weight << endl;
     }
 }
 
@@ -205,33 +261,6 @@ void ListGraph::printGraph()
         cout << "Graph is empty." << endl;
 }
 
-// Print graph on screen as connectivity matrix
-void ListGraph::printGraph(MatrixStyle style)
-{
-    if (this->nodeCnt == 0) {
-        cout << "Graph is empty." << endl;
-        return;
-    }
-
-    for ( unsigned int i = 0; i < this->nodeCnt; i++)
-    {
-        vector<Edge>::iterator it = this->graph[i].begin();
-        for ( unsigned int j = 0; j < this->nodeCnt; j++)
-        {
-            if (it != this->graph[i].end() && it->vertex == j)
-            {
-                cout << setw(2) << it->weight << " ";
-                it++;
-            }
-            else
-            {
-                cout << " 0 ";
-            }
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
 
 // Checks if graph is connected (all nodes are reachable)
 bool ListGraph::isConnected()
@@ -325,14 +354,13 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
         current_old = current;
     }
 #if 1
-    cout << endl << "Dijstra solution from node " << source << " is:" << endl << "[node]: [distance]" << endl;
+    cout << "[node]: [distance]" << endl;
     for (unsigned int i = 0; i < distances.size(); ++i) {
         cout << setw(2) << i << ":  ";
         if (distances[i] == UINT_MAX)
                 cout << "not reachable" << endl;
         else
             cout << distances[i] << endl;
-
     }
 #endif
     delete Q;
@@ -350,7 +378,7 @@ template<typename A> void printEdgeSet(A& edges)
 
 unsigned int ListGraph::MST(unsigned int source)
 {
-    ListGraph* mst = new ListGraph(this->nodeCnt);        // empty vertices forest
+    ListGraph* mst = new ListGraph(this->nodeCnt);              // empty vertices forest
     unsigned int mst_cost = 0;
     multiset<Edge, EdgeCompare> Q;                               // Set Vertices achievable from current MST
     vector<unsigned int> covered(nodeCnt, 0);
@@ -363,11 +391,11 @@ unsigned int ListGraph::MST(unsigned int source)
         for (auto v: graph[cur])
         {
             if(!covered[v.vertex]) {
-                cout << "Found not covered vertex from " << cur << ": " << v << endl;
+//                cout << "Found not covered vertex from " << cur << ": " << v << endl;
                 Q.insert(v);
             }
         }
-        printEdgeSet(Q);
+//        printEdgeSet(Q);
         Edge minV = *Q.begin();
         mst->Add(minV.from, minV.vertex, minV.weight);
         mst_cost += minV.weight;
@@ -377,11 +405,44 @@ unsigned int ListGraph::MST(unsigned int source)
         }
         covered[minV.vertex] = 1;
         cur = minV.vertex;
-        cout << "Erased all connections to vertex " << minV.vertex << " from Q" << endl;
-        printEdgeSet(Q);
+//        cout << "Erased all connections to vertex " << minV.vertex << " from Q" << endl;
+//        printEdgeSet(Q);
 
     }while (!Q.empty()); // until all nodes are in mst
     mst->printGraph();
     delete mst;
     return mst_cost;
+}
+
+int main() {
+    ListGraph* pGraph = nullptr;
+    ifstream graphFile;
+    bool connected = false;
+
+    cout << endl << endl << "Test input from file input.txt:" << endl;
+    graphFile.open("input.txt", ios::in);
+    pGraph = new ListGraph(graphFile);
+    graphFile.close();
+    cout << "Graph loaded from file:" << endl <<
+            "Number of vertices: " << pGraph->V() << endl <<
+            "Number of edges:    " << pGraph->E() << endl;
+
+//    pGraph->printGraph();
+    connected = pGraph->isConnected();
+    cout << "This graph " << (connected ? "is" : "is not") << " connected" << endl;
+
+    if (connected) {
+        cout << "Launch Dijkstra algorithm from node 0" << endl;
+        unsigned int average_cost= pGraph->Dijkstra(0);
+        cout << "Average cost from node 0 to every other is " << average_cost << endl;
+
+        cout << endl << "MST on that graph:";
+        unsigned int mst = pGraph->MST(0);
+        cout << "Mst cost is " << mst << endl;
+    }
+    else
+        cout << "Dijkstra not launched on not connected graph" << endl;
+
+    delete pGraph;
+    return 0;
 }

@@ -89,7 +89,10 @@ class enum color {RED, BLUE, GREEN}
 4.3 - pseudo code in 4:30
 
 * Kruskal's Algorithm
-
+ - make a sorted list of edges
+ - take another from the list
+ - check if both nodes from the edge are not in reached nodes: avoid loops
+ - stop if all nodes are reached 
 
 
 
