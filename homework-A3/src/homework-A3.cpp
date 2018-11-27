@@ -39,7 +39,7 @@ class EdgeCompare{
 public:
     bool operator()( const Edge& lhs, const Edge& rhs)
     {
-            return (lhs.weight < rhs.weight);
+        return (lhs.weight < rhs.weight);
     }
 };
 /*
@@ -80,16 +80,6 @@ const unsigned int nodes_limit = 10000;
 ostream& operator<< (ostream &out, const Edge &edge) {
     out << "(" << std::setw(2) << edge.from << "~"<< std::setw(2) << edge.vertex << "," << std::setw(2) << edge.weight << ")"; return out;
 }
-
-//bool operator<(const Edge & right) const
-//{
-//    return (this->weight < right.weight);
-//}
-
-//bool operator< (const Edge &left, const Edge &right)
-//{
-//    return left.weight < right.weight;
-//}
 
 ListGraph::ListGraph(unsigned int n)
 {
@@ -364,7 +354,7 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
     }
 #endif
     delete Q;
-    return (average/distances.size());
+    return (average/(distances.size()-1));
 }
 
 
@@ -375,7 +365,7 @@ template<typename A> void printEdgeSet(A& edges)
     cout << endl;
 }
 
-
+// MST with Prim's algorithm
 unsigned int ListGraph::MST(unsigned int source)
 {
     ListGraph* mst = new ListGraph(this->nodeCnt);              // empty vertices forest
@@ -391,13 +381,12 @@ unsigned int ListGraph::MST(unsigned int source)
         for (auto v: graph[cur])
         {
             if(!covered[v.vertex]) {
-//                cout << "Found not covered vertex from " << cur << ": " << v << endl;
                 Q.insert(v);
             }
         }
-//        printEdgeSet(Q);
         Edge minV = *Q.begin();
         mst->Add(minV.from, minV.vertex, minV.weight);
+        cout << minV << ", ";                       // Print out edge added to MST
         mst_cost += minV.weight;
         for( multiset<Edge, EdgeCompare>::iterator v = Q.begin(); v != Q.end(); v++) {
             if(v->vertex == minV.vertex)
@@ -405,11 +394,9 @@ unsigned int ListGraph::MST(unsigned int source)
         }
         covered[minV.vertex] = 1;
         cur = minV.vertex;
-//        cout << "Erased all connections to vertex " << minV.vertex << " from Q" << endl;
-//        printEdgeSet(Q);
-
     }while (!Q.empty()); // until all nodes are in mst
-    mst->printGraph();
+
+//    mst->printGraph();
     delete mst;
     return mst_cost;
 }
@@ -436,9 +423,9 @@ int main() {
         unsigned int average_cost= pGraph->Dijkstra(0);
         cout << "Average cost from node 0 to every other is " << average_cost << endl;
 
-        cout << endl << "MST on that graph:";
+        cout << endl << "Edges in MST (Prim's algorithm):" << endl;
         unsigned int mst = pGraph->MST(0);
-        cout << "Mst cost is " << mst << endl;
+        cout << endl << "Mst cost is " << mst << endl;
     }
     else
         cout << "Dijkstra not launched on not connected graph" << endl;

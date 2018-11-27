@@ -94,6 +94,26 @@ class enum color {RED, BLUE, GREEN}
  - check if both nodes from the edge are not in reached nodes: avoid loops
  - stop if all nodes are reached 
 
+--------------------------------------------------------------------------------
+* Vector methods
+  vector<int> v;
+  v.size();
+  v.resize(int size);
+- constructors (many of them):
+  vector<T> v; //empty vector
+  vector<T> v(int n) // size n vector
+  
+--------------------------------------------------------------------------------
+* range for statement
+  for (declaration : expression )
+    statement
+  double data_d[] = {1.2, 2.2, 4.4, 5.5 };
+    double sumd = 0.0;
+    for (auto& d: data_d)
+        sumd += d;
+    
+  
+
 
 
 
