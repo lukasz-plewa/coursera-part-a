@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <climits>
+#include <iterator>
 #include "list_graph.h"
 
 using namespace std;
@@ -24,16 +25,6 @@ const unsigned int nodes_limit = 10000;
 ostream& operator<< (ostream &out, const Edge &edge) {
     out << "(" << std::setw(2) << edge.from << "~"<< std::setw(2) << edge.vertex << "," << std::setw(2) << edge.weight << ")"; return out;
 }
-
-//bool operator<(const Edge & right) const
-//{
-//    return (this->weight < right.weight);
-//}
-
-//bool operator< (const Edge &left, const Edge &right)
-//{
-//    return left.weight < right.weight;
-//}
 
 ListGraph::ListGraph(unsigned int n)
 {
@@ -56,7 +47,9 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
     if (inFile)
     {
         unsigned int n, from, to, weight;
-        inFile >> n;
+        istream_iterator<int> start(inFile), end;
+        vector<int> graph_file(start, end);
+        n = graph_file[0];
         cout << "Number of nodes: " << n << endl;
         if ( n < nodes_limit)
         {
@@ -70,10 +63,11 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
             else
                 cout << "Error creating nodes vector" << endl;
 
-            while (true)
+            for (auto it = (graph_file.begin()+1); it != graph_file.end(); ++it)
             {
-                inFile >> from >> to >> weight;
-                if (inFile.eof()) break;
+                from = *it++;
+                to = *it++;
+                weight = *it;
                 this->Add(from, to, weight);
             }
         }
