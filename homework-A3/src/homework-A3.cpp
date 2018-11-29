@@ -22,19 +22,22 @@ inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(R
 inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 
-// Declaration of special type for handling definition of edge: vertex and weight value pair
+// Definition of edge object: from vertex and weight value pair
 class Edge {
-    unsigned int from, vertex, weight;    // An vertex to which this edge connects to and weight of this edge
+    unsigned int from, vertex; // Connected vertices
+    unsigned int weight;       // Weight of this edge
 public:
-    Edge() : from(0), vertex(0), weight(0) {}                                  // default constructor
+    Edge() : from(0), vertex(0), weight(0) {}
     Edge(unsigned int f, unsigned int v, unsigned int w) : from(f), vertex(v), weight(w) {}
-    Edge(const Edge& v) { from = v.from; vertex = v.vertex; weight = v.weight; }   // copy constructor
+    Edge(const Edge& e) { from = e.from; vertex = e.vertex; weight = e.weight; }   // copy constructor
 
     friend std::ostream& operator<< (std::ostream &out, const Edge& edge);
     friend class ListGraph;
+    friend class MstGraph;
     friend class EdgeCompare;
 };
 
+// Class with overloaded operator () for proper sorting in std::multiset<Edge>
 class EdgeCompare{
 public:
     bool operator()( const Edge& lhs, const Edge& rhs)
@@ -43,44 +46,60 @@ public:
     }
 };
 /*
- * Definition of object class which is handling weighted graph represented as a list of nodes:
+ * Class which is handling weighted graph represented as a list of nodes:
   1 -> 1, 2, 3, 4
   2 -> 1
   3 -> 2, 4
   4 -> 2, 3
+  Vector of vectors for graph representation as a list of connections
  */
-class ListGraph {
-    std::vector< std::vector<Edge> >graph;    // Vector of vectors for graph representation as a list of connections
+class ListGraph
+{
+protected:
+    std::vector< std::vector<Edge> > graph;
     unsigned int edgeCnt;                       // Number of edges
     unsigned int nodeCnt;                       // Number of nodes
     double density;
+    const unsigned int nodes_limit = 10000;
 public:
-    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}   // Create empty graph
-    ListGraph(unsigned int n);                              // Create graph with n nodes without any edges
-    ListGraph(std::ifstream& inFile);                       // Create graph defined in file as list of edges
-    ListGraph(unsigned int** matrix, unsigned int N);       // Create graph from simple 2D array
+    ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}   // Empty graph
+    ListGraph(unsigned int n);                              // Graph with n nodes without any edges
+    ListGraph(std::ifstream& inFile);                       // Graph defined in file as list of edges
+    ListGraph(unsigned int** matrix, unsigned int N);       // Graph from simple 2D array
 
-    // Methods
-    int loadFromMatrix(unsigned int** matrix, size_t N);
+    int loadFromMatrix(unsigned int** matrix, size_t N);    // Load graph from 2D array
     int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
     void printGraph();
     unsigned int V() { return nodeCnt; }
     unsigned int E() { return edgeCnt; }
     unsigned int D() { return density; }
-    void Add(unsigned int from, unsigned int to, unsigned int weight); // Adds an edge if it is not there
+    // Add() methods adds an edge if it is not there yet
+    void Add(unsigned int from, unsigned int to, unsigned int weight);
     void Add(Edge &edge);
-    bool isConnected();                             // Launch the "is connected" algorithm on graph
-    unsigned int Dijkstra(unsigned int source);
-    unsigned int MST(unsigned int source);
+    // Launch algorithms on graph
+    bool isConnected();
+    unsigned int Dijkstra(unsigned int source); // Start from "source" node number
 };
 
-const double density = 0.19;
-const unsigned int nodes_limit = 10000;
-
-ostream& operator<< (ostream &out, const Edge &edge) {
+// Simple print to console the edge in format: (from ~ to, weight)
+ostream& operator<< (ostream &out, const Edge &edge)
+{
     out << "(" << std::setw(2) << edge.from << "~"<< std::setw(2) << edge.vertex << "," << std::setw(2) << edge.weight << ")"; return out;
 }
 
+class MstGraph : public ListGraph
+{
+    bool areConnected(unsigned int Xnode, unsigned int Ynode);
+public:
+    MstGraph() : ListGraph() {};
+    MstGraph(unsigned int n) : ListGraph(n) {};
+    MstGraph(std::ifstream& inFile) : ListGraph(inFile) {};
+
+    unsigned int MST(unsigned int source);      // Start from "source" node number
+    unsigned int MST();                         // MST using KRUSKAL algorithm
+};
+
+// Prepare graph nodes. Every node has now an empty vector of Edges
 ListGraph::ListGraph(unsigned int n)
 {
     if ( n < nodes_limit)
@@ -96,9 +115,15 @@ ListGraph::ListGraph(unsigned int n)
     }
 }
 
-ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
+// Load graph from file.
+// First line is an integer with nodes count.
+// Every other line in file has three integer values for edge definition:
+// For example: 0 1 7 - it means: edge from 0 to 1 with weight 7
+ListGraph::ListGraph(std::ifstream& inFile)
 {
     density = 0.0;
+    edgeCnt = nodeCnt = 0;
+
     if (inFile)
     {
         unsigned int n, from, to, weight;
@@ -111,15 +136,14 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
                 vector<Edge> node;
                 graph.push_back(node);
             }
-            if (n == graph.size())
-                nodeCnt = n;
-            else
-                cout << "Error creating nodes vector" << endl;
+            // Created graph with "n" nodes without any edge
+            nodeCnt = n;
 
             while (true)
             {
-                inFile >> from >> to >> weight;
-                if (inFile.eof()) break;
+                inFile >> from >> to >> weight; // Read one line from file
+                if (inFile.eof()) break;        // Finish when file ends
+                // Now read and add all nodes from file to graph
                 this->Add(from, to, weight);
             }
         }
@@ -129,6 +153,8 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
 
 ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
 {
+    density = 0.0;
+    edgeCnt = nodeCnt = 0;
     if (matrix != NULL)
     {
         if( 0 != this->loadFromMatrix(matrix, N))
@@ -175,19 +201,20 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
     return 0;
 }
 
+// Insert new edge into graph (if it doesn't exist)
 void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
 {
-    if (from >= nodeCnt || to >= nodeCnt) // "from" vertex doesn't exist in graph
+    if (from >= nodeCnt || to >= nodeCnt)
     {
         cout << "Error! Cannot add edge. Edge number " << from << " or " << to << " doesn't exist." << endl;
         return;
     }
+    // Add only if that edge doesn't exist in the graph
     if (std::find_if(graph[from].begin(), graph[from].end(), [&to](const Edge & obj) -> bool {return (obj.vertex == to);}) == graph[from].end())
-    {   // Only if that edge doesn't exist yet in the graph
+    {
         graph[from].push_back(Edge(from, to, weight));
         graph[to].push_back(Edge(to, from, weight));
         edgeCnt++;
-//        cout << "Add (" << from << " - " << to << ")" << weight << endl;
     }
 }
 
@@ -205,6 +232,9 @@ void ListGraph::Add(Edge &edge)
 }
 
 // Generate weighted and undirected graph with list representation
+// Connections and weight values are random
+// dens - graph density used when generating connections
+// distanceRange - maximum distance when
 int ListGraph::generateRandom(unsigned int N, double dens, unsigned int distanceRange)
 {
     if (this->nodeCnt == 0 && N > 0)
@@ -234,16 +264,17 @@ int ListGraph::generateRandom(unsigned int N, double dens, unsigned int distance
     return 0;
 }
 
+// Simply print graph as a list of edges for every node
 void ListGraph::printGraph()
 {
     if (this->nodeCnt > 0)
     {
         unsigned int i = 0;
-        for ( vector<Edge> v: this->graph)
+        for ( vector<Edge> node: this->graph)
         {
             cout << endl << setw(3) << i++ << " -> ";
-            for ( Edge n: v)
-                cout << n << ", ";
+            for ( Edge edge: node)
+                cout << edge << ", ";
         }
         cout << endl;
     }
@@ -259,34 +290,37 @@ bool ListGraph::isConnected()
     std::set<unsigned int> openset;
     std::set<unsigned int> closedset;
 
-    unsigned int connected = 0;     // Start from '0' node - reference to that node connection list
-    openset.insert(connected);      // Place node "0" in open set
-    if(nodeCnt == 0)
+    if(this->nodeCnt == 0)
     {
         cout << "Graph is empty" << endl;
         return false;
     }
+    unsigned int connected = 0;     // Start from '0' node - reference to that node connection list
+    openset.insert(connected);      // Place node "0" in open set
 
     do
     {
-        if (this->graph[connected].empty()) // Vertex without any edges
+        if (this->graph[connected].empty())         // Vertex without any edges
             break;
 
-        for(Edge node: this->graph[connected])    // For every vertex reachable from 'connected' node
+        // For every vertex reachable from 'connected' node:
+        for(Edge node: this->graph[connected])
         {   // Add all reachable nodes to open set if they are not in closed set yet
             if (closedset.find(node.vertex) == closedset.end())
                 openset.insert(node.vertex);        // Add to open set if not in closed set
         }
-        closedset.insert(connected);
+        closedset.insert(connected);                // This node is done
         openset.erase(connected);
-        if (!openset.empty()) {
+        if (!openset.empty())
+        {
             connected = *openset.begin();           // Take next node from open set
         }
-        else if (closedset.size() == this->nodeCnt) {
+        else if (closedset.size() == this->nodeCnt)
+        {   // All nodes in closed set - finish
             isconnected = true;
             break;
         }
-        else    // No nodes available in open set
+        else    // No nodes available in open set, finish
             break;
     }
     while ( true );   // empty node or all nodes reached
@@ -358,57 +392,136 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
 }
 
 
-template<typename A> void printEdgeSet(A& edges)
+template<typename A> void printEdges(A& edges, const std::string & delim)
 {
     for (auto e: edges)
-        cout << e << ", ";
+        cout << e << delim;
     cout << endl;
 }
 
 // MST with Prim's algorithm
-unsigned int ListGraph::MST(unsigned int source)
+unsigned int MstGraph::MST(unsigned int source)
 {
-    ListGraph* mst = new ListGraph(this->nodeCnt);              // empty vertices forest
+    MstGraph* mst = new MstGraph(this->nodeCnt);        // Empty vertices forest
     unsigned int mst_cost = 0;
-    multiset<Edge, EdgeCompare> Q;                               // Set Vertices achievable from current MST
-    vector<unsigned int> covered(nodeCnt, 0);
-    unsigned int cur = 0;
-    covered[0] = 1;
+    std::multiset<Edge, EdgeCompare> EdgeCandidates;    // Set Vertices achievable from current MST
+    std::vector<bool> covered(this->nodeCnt, false);
+    unsigned int cur = source;                          // Initial vertex
+    covered[cur] = true;
 
     do
     {
-        // Add to priority queue all vertices achievable from newly added node (only if they are not in mst yet)
-        for (auto v: graph[cur])
+        // Add to priority queue all vertices achievable from newly added node (only if they are not in MST yet)
+        for (Edge edge: graph[cur])
         {
-            if(!covered[v.vertex]) {
-                Q.insert(v);
+            if(!covered[edge.vertex])
+            {
+                EdgeCandidates.insert(edge);
             }
         }
-        Edge minV = *Q.begin();
-        mst->Add(minV.from, minV.vertex, minV.weight);
-        cout << minV << ", ";                       // Print out edge added to MST
-        mst_cost += minV.weight;
-        for( multiset<Edge, EdgeCompare>::iterator v = Q.begin(); v != Q.end(); v++) {
-            if(v->vertex == minV.vertex)
-                Q.erase(v);
-        }
-        covered[minV.vertex] = 1;
-        cur = minV.vertex;
-    }while (!Q.empty()); // until all nodes are in mst
 
-//    mst->printGraph();
+        auto candidateItr = EdgeCandidates.begin();
+        // Avoid loops - remove edges for covered nodes
+        while( covered[candidateItr->from] && covered[candidateItr->vertex])
+        {
+            EdgeCandidates.erase(candidateItr++);
+        }
+
+        // Add new node to MST
+        mst->Add(candidateItr->from, candidateItr->vertex, candidateItr->weight);
+        cout << "Edge added to MST: " << *candidateItr << endl;
+        mst_cost += candidateItr->weight;
+
+        covered[candidateItr->vertex] = true;
+        cur = candidateItr->vertex;
+        EdgeCandidates.erase(candidateItr);
+    }while (mst->edgeCnt != (this->nodeCnt-1)); // until all nodes are in MST
+
+    mst->printGraph();
     delete mst;
     return mst_cost;
 }
 
+// Checks if two graph Vertices are connected
+bool MstGraph::areConnected(unsigned int Xnode, unsigned int Ynode)
+{
+    bool isconnected = false;
+    std::set<unsigned int> openset;
+    std::set<unsigned int> closedset;
+
+    unsigned int connected = Xnode; // Start from Xnode
+    openset.insert(connected);      // Place node Xnode in open set
+
+    do
+    {
+        if (this->graph[connected].empty())         // Vertex without any edges
+            break;
+
+        // For every vertex reachable from 'connected' node:
+        for(Edge node: this->graph[connected])
+        {
+            if(node.vertex == Ynode)    // Wanted Ynode node found! Success
+                return true;
+            if (closedset.find(node.vertex) == closedset.end())
+                openset.insert(node.vertex);        // Add to open set if not in closed set
+        }
+        closedset.insert(connected);                // This node is done
+        openset.erase(connected);
+        if (!openset.empty())
+            connected = *openset.begin();           // Take next node from open set
+        else    // No nodes available in open set, finish
+            break;
+    }
+    while ( true );   // empty node or all nodes reached
+    return isconnected;
+}
+
+// Find MST using KRUSKAL's algorithm
+// Returns MST cost
+unsigned int MstGraph::MST()
+{
+    // 1. Prepare a set of edges ordered by weight
+    std::multiset<Edge, EdgeCompare> EdgeCandidates; // Set of vertices ordered by weight
+    // 2. Prepare an empty forest: every tree is an graph node
+    MstGraph* mst = new MstGraph(this->nodeCnt);  // empty vertices forest
+    unsigned int mstCost = 0;
+
+    // 3. Fill the edge candidates set
+    for (auto node_vector: this->graph)
+    {
+        for(auto edge: node_vector)
+        {
+            EdgeCandidates.insert(edge);
+        }
+    }
+
+    // 4. Now pick the smallest weight node from the list:
+    std::multiset<Edge, EdgeCompare>::iterator eit = EdgeCandidates.begin();
+    while (mst->edgeCnt != (this->nodeCnt-1)) // if MST is not yet spanning
+    {
+        // check if both nodes from the edge are not in reached nodes: avoid loops
+        if ( !mst->areConnected(eit->from, eit->vertex) )
+        {
+            mst->Add(eit->from, eit->vertex, eit->weight);
+            mstCost += eit->weight;
+            cout << "Added edge " << *eit << ", current MST has " << mst->edgeCnt << " edges and cost " << mstCost << endl;
+        }
+
+        eit++;// take another with smallest weight
+    }
+    mst->printGraph();
+    delete mst;
+    return mstCost;
+}
+
 int main() {
-    ListGraph* pGraph = nullptr;
+    MstGraph* pGraph = nullptr;
     ifstream graphFile;
     bool connected = false;
 
     cout << endl << endl << "Test input from file input.txt:" << endl;
     graphFile.open("input.txt", ios::in);
-    pGraph = new ListGraph(graphFile);
+    pGraph = new MstGraph(graphFile);
     graphFile.close();
     cout << "Graph loaded from file:" << endl <<
             "Number of vertices: " << pGraph->V() << endl <<
@@ -419,13 +532,15 @@ int main() {
     cout << "This graph " << (connected ? "is" : "is not") << " connected" << endl;
 
     if (connected) {
+        unsigned int mst = 0;
         cout << "Launch Dijkstra algorithm from node 0" << endl;
         unsigned int average_cost= pGraph->Dijkstra(0);
         cout << "Average cost from node 0 to every other is " << average_cost << endl;
 
-        cout << endl << "Edges in MST (Prim's algorithm):" << endl;
-        unsigned int mst = pGraph->MST(0);
-        cout << endl << "Mst cost is " << mst << endl;
+        mst = pGraph->MST();
+        cout << endl << "MST (Kruskal's algorithm) cost is " << mst << endl;
+        mst = pGraph->MST(4);
+        cout << endl << "MST (Prim's algorithm) cost is " << mst << endl;
     }
     else
         cout << "Dijkstra not launched on not connected graph" << endl;
