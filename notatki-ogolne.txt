@@ -113,7 +113,25 @@ class enum color {RED, BLUE, GREEN}
         sumd += d;
     
   
+--------------------------------------------------------------------------------
+Iterators
+- categories (Five iterator categories) from weakest to strongest:
+  - input - read, single pass: for example read input file
+  - output - write, single pass
+  - forward - read and write, mutlipass - 1D
+  - bidirectional, multi-pass +2 directions
+  - Random access (strongest), anywhere
 
+In STL the design principle is to use the weakest iterator that accomodates the most efficient algorithm. 
+For example quicksort requires random access. As a consequence it cannot be used on a non-random access container such as a list. Because quicksort is called "partition exchange"
+
+The iterator hierarchy:
+1. input iterator
+  ++ sequention move
+  * access operator
+  sequential access elements in input stream.
+  find(elem) in a collection searched sequentially
+  == and != are defined also
 
 
 

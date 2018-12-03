@@ -24,16 +24,18 @@ inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 // Definition of edge object: from vertex and weight value pair
 class Edge {
-    unsigned int from, vertex; // Connected vertices
-    unsigned int weight;       // Weight of this edge
+    const unsigned int from, vertex; // Connected vertices
+    const unsigned int weight;       // Weight of this edge
 public:
-    Edge() : from(0), vertex(0), weight(0) {}
     Edge(unsigned int f, unsigned int v, unsigned int w) : from(f), vertex(v), weight(w) {}
-    Edge(const Edge& e) { from = e.from; vertex = e.vertex; weight = e.weight; }   // copy constructor
+    Edge(const Edge& e) : from(e.from), vertex(e.vertex), weight(e.weight) {}   // copy constructor
+
+    // Methods
+    unsigned int From() const { return this->from; }
+    unsigned int To() const { return this->vertex; }
+    unsigned int Weight() const { return this->weight; }
 
     friend std::ostream& operator<< (std::ostream &out, const Edge& edge);
-    friend class ListGraph;
-    friend class MstGraph;
     friend class EdgeCompare;
 };
 
@@ -210,7 +212,7 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
         return;
     }
     // Add only if that edge doesn't exist in the graph
-    if (std::find_if(graph[from].begin(), graph[from].end(), [&to](const Edge & obj) -> bool {return (obj.vertex == to);}) == graph[from].end())
+    if (std::find_if(graph[from].begin(), graph[from].end(), [&to](Edge & obj) -> bool {return (obj.To() == to);}) == graph[from].end())
     {
         graph[from].push_back(Edge(from, to, weight));
         graph[to].push_back(Edge(to, from, weight));
@@ -220,14 +222,14 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
 
 void ListGraph::Add(Edge &edge)
 {
-    unsigned int to = edge.vertex;
-    unsigned int from = edge.from;
-    if (std::find_if(graph[from].begin(), graph[from].end(), [&to](const Edge & obj) -> bool {return (obj.vertex == to);}) == graph[from].end())
+    unsigned int to = edge.To();
+    unsigned int from = edge.From();
+    if (std::find_if(graph[from].begin(), graph[from].end(), [&to](Edge & obj) -> bool {return (obj.To() == to);}) == graph[from].end())
     {   // Only if that edge doesn't exist yet in the graph
         graph[from].push_back(edge);
         graph[to].push_back(edge);
         edgeCnt++;
-        cout << "Add (" << from << " - " << to << ")" << edge.weight << endl;
+        cout << "Add (" << from << " - " << to << ")" << edge.Weight() << endl;
     }
 }
 
@@ -304,10 +306,10 @@ bool ListGraph::isConnected()
             break;
 
         // For every vertex reachable from 'connected' node:
-        for(Edge node: this->graph[connected])
+        for(Edge edge: this->graph[connected])
         {   // Add all reachable nodes to open set if they are not in closed set yet
-            if (closedset.find(node.vertex) == closedset.end())
-                openset.insert(node.vertex);        // Add to open set if not in closed set
+            if (closedset.find(edge.To()) == closedset.end())
+                openset.insert(edge.To());        // Add to open set if not in closed set
         }
         closedset.insert(connected);                // This node is done
         openset.erase(connected);
@@ -345,7 +347,7 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
     for (unsigned int i=0; i<this->nodeCnt; ++i)
         Q->insert(i);
     for (auto v: this->graph[source])
-        distances[v.vertex] = v.weight;     // Initialize distances from source node to connected nodes
+        distances[v.To()] = v.Weight();     // Initialize distances from source node to connected nodes
     distances[source] = 0;                  // Distance to starting node is zero
     Q->erase(source);                        // source node is can be marked as complete
     unsigned int current = source;
@@ -371,8 +373,8 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
         //3. Update distances from current node
         for (auto v: this->graph[current])
         {
-            if (distances[v.vertex] > (distances[current] + v.weight)) {
-                distances[v.vertex] = (distances[current] + v.weight);
+            if (distances[v.To()] > (distances[current] + v.Weight())) {
+                distances[v.To()] = (distances[current] + v.Weight());
             }
         }
         current_old = current;
@@ -414,7 +416,7 @@ unsigned int MstGraph::MST(unsigned int source)
         // Add to priority queue all vertices achievable from newly added node (only if they are not in MST yet)
         for (Edge edge: graph[cur])
         {
-            if(!covered[edge.vertex])
+            if(!covered[edge.To()])
             {
                 EdgeCandidates.insert(edge);
             }
@@ -422,18 +424,18 @@ unsigned int MstGraph::MST(unsigned int source)
 
         auto candidateItr = EdgeCandidates.begin();
         // Avoid loops - remove edges for covered nodes
-        while( covered[candidateItr->from] && covered[candidateItr->vertex])
+        while( covered[candidateItr->From()] && covered[candidateItr->To()])
         {
             EdgeCandidates.erase(candidateItr++);
         }
 
         // Add new node to MST
-        mst->Add(candidateItr->from, candidateItr->vertex, candidateItr->weight);
+        mst->Add(candidateItr->From(), candidateItr->To(), candidateItr->Weight());
         cout << "Edge added to MST: " << *candidateItr << endl;
-        mst_cost += candidateItr->weight;
+        mst_cost += candidateItr->Weight();
 
-        covered[candidateItr->vertex] = true;
-        cur = candidateItr->vertex;
+        cur = candidateItr->To();
+        covered[cur] = true;
         EdgeCandidates.erase(candidateItr);
     }while (mst->edgeCnt != (this->nodeCnt-1)); // until all nodes are in MST
 
@@ -460,10 +462,10 @@ bool MstGraph::areConnected(unsigned int Xnode, unsigned int Ynode)
         // For every vertex reachable from 'connected' node:
         for(Edge node: this->graph[connected])
         {
-            if(node.vertex == Ynode)    // Wanted Ynode node found! Success
+            if(node.To() == Ynode)    // Wanted Ynode node found! Success
                 return true;
-            if (closedset.find(node.vertex) == closedset.end())
-                openset.insert(node.vertex);        // Add to open set if not in closed set
+            if (closedset.find(node.To()) == closedset.end())
+                openset.insert(node.To());        // Add to open set if not in closed set
         }
         closedset.insert(connected);                // This node is done
         openset.erase(connected);
@@ -500,10 +502,10 @@ unsigned int MstGraph::MST()
     while (mst->edgeCnt != (this->nodeCnt-1)) // if MST is not yet spanning
     {
         // check if both nodes from the edge are not in reached nodes: avoid loops
-        if ( !mst->areConnected(eit->from, eit->vertex) )
+        if ( !mst->areConnected(eit->From(), eit->To()) )
         {
-            mst->Add(eit->from, eit->vertex, eit->weight);
-            mstCost += eit->weight;
+            mst->Add(eit->From(), eit->To(), eit->Weight());
+            mstCost += eit->Weight();
             cout << "Added edge " << *eit << ", current MST has " << mst->edgeCnt << " edges and cost " << mstCost << endl;
         }
 
