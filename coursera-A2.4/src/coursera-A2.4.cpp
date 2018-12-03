@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include "list_graph.h"
+#include "logger.hpp"
 
 using namespace std;
 
@@ -75,56 +76,62 @@ int main()
 }
 #else
 
+using namespace logger;
+
 int main() {
+    logger::Logger logout("main graph");
     ListGraph* pGraph = nullptr;    // New empty graph object
     srand(time(0));
     pGraph = new ListGraph();
 #if 0
-//    cout << "Load weighted graph from connectivity matrix:" << endl;
-//    graphinput = graphGenerate(N);
     graphinput = graphLoad(manual);
     cout << "Load graph from connectivity matrix" << endl;
     pGraph->loadFromMatrix(graphinput, N);
 #else
-    pGraph->generateRandom(20, 0.19, 10);
+    pGraph->generateRandom(20, 0.29, 10);
 #endif
     pGraph->printGraph();
     bool connected = pGraph->isConnected();
-    cout << "This graph " << (connected ? "is" : "is not") << " connected" << endl;
+    logout << logger::logLevel_e::logINFO << (connected ? "is" : "is not") << " connected\n";
 
-//    pGraph->printGraph(MatrixStyle::MATRIX_CONNECTIONS_ONLY);
-//    pGraph->printGraph(MatrixStyle::MATRIX_ARRAY);
     pGraph->printGraph(MatrixStyle::MATRIX_WEIGHT);
+    pGraph->outputGraph("output-graph.txt");
 
     if (connected) {
         pGraph->Dijkstra(0);
         unsigned int mst = pGraph->MST(0);
-        cout << "Mst cost is " << mst << endl;
+        logout << logger::logLevel_e::logINFO << "Mst cost is " << mst << "\n";
     }
-    else cout << "Dijkstra not launched on not connected graph" << endl;
+    else
+        logout << logger::logLevel_e::logWARNING << "Dijkstra not launched on not connected graph\n";
 
     delete pGraph;
+
+
 #if 1
-    cout << endl << endl << "Now test input from file:" << endl;
+    logout << logLevel_e::logINFO << "\n------------------------------\nNow test input from file:\n";
     ifstream graphFile;
     graphFile.open("input.txt", ios::in);
     pGraph = new ListGraph(graphFile);
     graphFile.close();
-    cout << "Graph loaded from file:" << endl <<
-            "Number of vertices: " << pGraph->V() << endl <<
-            "Number of edges:    " << pGraph->E() << endl;
+    logout << logLevel_e::logINFO <<
+            "Graph loaded from file:\n" <<
+            "Number of vertices: " << pGraph->V() << "\n" <<
+            "Number of edges:    " << pGraph->E() << "\n";
     pGraph->printGraph();
     connected = pGraph->isConnected();
-    cout << "This graph " << (connected ? "is" : "is not") << " connected" << endl;
+    logout << logLevel_e::logINFO <<
+            "This graph " << (connected ? "is" : "is not") << " connected\n";
 
     if (connected) {
-        cout << "Launch Dijkstra algorithm from node 0" << endl;
+        logout << logger::logLevel_e::logINFO << "Launch Dijkstra algorithm from node 0\n";
         unsigned int average_cost= pGraph->Dijkstra(0);
-        cout << "Average cost from node 0 to every other is " << average_cost << endl;
+        logout << logLevel_e::logINFO << "Average cost from node 0 to every other is " << average_cost << "\n";
         unsigned int mst = pGraph->MST(0);
         cout << "Mst cost is " << mst << endl;
     }
-    else cout << "Dijkstra not launched on not connected graph" << endl;
+    else
+        logout << logLevel_e::logINFO << "Dijkstra not launched on not connected graph.\n";
 
     delete pGraph;
 #endif

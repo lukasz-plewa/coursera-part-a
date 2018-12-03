@@ -13,8 +13,9 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
-inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)); }
+inline double prob() { return (static_cast<double>(rand()) / static_cast<double>(RAND_MAX)); }
 inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 enum class MatrixStyle {MATRIX_ARRAY, MATRIX_CONNECTIONS_ONLY, MATRIX_WEIGHT};
@@ -72,6 +73,7 @@ public:
     int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
     void printGraph();
     void printGraph(MatrixStyle style);
+    int outputGraph(std::string filename);
     unsigned int V() { return nodeCnt; }
     unsigned int E() { return edgeCnt; }
     unsigned int D() { return density; }

@@ -16,6 +16,7 @@
 #include <climits>
 #include <iterator>
 #include "list_graph.h"
+#include "logger.hpp"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ const double density = 0.19;
 const unsigned int nodes_limit = 10000;
 
 ostream& operator<< (ostream &out, const Edge &edge) {
-    out << "(" << std::setw(2) << edge.from << "~"<< std::setw(2) << edge.vertex << "," << std::setw(2) << edge.weight << ")"; return out;
+    out << std::setw(2) << edge.from << " "<< std::setw(2) << edge.vertex << " " << std::setw(2) << edge.weight; return out;
 }
 
 ListGraph::ListGraph(unsigned int n)
@@ -50,7 +51,7 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
         istream_iterator<int> start(inFile), end;
         vector<int> graph_file(start, end);
         n = graph_file[0];
-        cout << "Number of nodes: " << n << endl;
+        //logIt(logDEBUG) << "Number of nodes: " << n << "\n";
         if ( n < nodes_limit)
         {
             for (unsigned int i = 0; i < n; i++)
@@ -61,7 +62,7 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
             if (n == graph.size())
                 nodeCnt = n;
             else
-                cout << "Error creating nodes vector" << endl;
+                //logIt(logERROR) << "Error creating nodes vector\n";
 
             for (auto it = (graph_file.begin()+1); it != graph_file.end(); ++it)
             {
@@ -77,14 +78,17 @@ ListGraph::ListGraph(std::ifstream& inFile) : edgeCnt(0), nodeCnt(0)
 
 ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
 {
+    this->density = 0.0;
+    this->nodeCnt = 0;
+    this->edgeCnt = 0;
     if (matrix != NULL)
     {
         if( 0 != this->loadFromMatrix(matrix, N))
-            cout << "ERROR creating ListGraph object!" << endl;
+            std::cerr << "ERROR creating ListGraph object!\n";
     }
     else
     {
-        cout << "ERROR! Null pointer as parameter!" << endl;
+        //logIt(logERROR) << "ERROR! Null pointer as parameter!\n";
     }
 }
 
@@ -92,7 +96,7 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
 {
     if (matrix == NULL && N > 0)
     {
-        cout << "Error! NULL pointer for matrix" << endl;
+        //logIt(logERROR) << "Error! NULL pointer for matrix\n";
         return -1;
     }
 
@@ -100,7 +104,7 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
     {
         for (size_t i = 0; i < N; i++)
         {
-            cout << i << " |  ";
+            //logIt(logDEBUG) << i << " |  ";
             vector<Edge> node_connections;
             for (size_t j = 0; j < N; j++)
             {
@@ -108,16 +112,16 @@ int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
                 {
                     node_connections.push_back(Edge(i, j, matrix[i][j]));
                 }
-                cout << " " << matrix[i][j] << " ";
+                //logIt(logDEBUG) << " " << matrix[i][j] << " ";
             }
-            cout << endl;
+            //logIt(logDEBUG) << "\n";
             this->graph.push_back(node_connections);
         }
         this->nodeCnt = N;
     }
     else
     {
-        cout << "ERROR! Graph is already initialized to size " << this->nodeCnt << endl;
+        //logIt(logERROR) << "ERROR! Graph is already initialized to size " << this->nodeCnt << "\n";
         return -1;
     }
     return 0;
@@ -127,7 +131,7 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
 {
     if (from >= nodeCnt || to >= nodeCnt) // "from" vertex doesn't exist in graph
     {
-        cout << "Error! Cannot add edge. Edge number " << from << " or " << to << " doesn't exist." << endl;
+        //logIt(logERROR) << "Error! Cannot add edge. Edge number " << from << " or " << to << " doesn't exist.\n";
         return;
     }
     if (std::find_if(graph[from].begin(), graph[from].end(), [&to](const Edge & obj) -> bool {return (obj.vertex == to);}) == graph[from].end())
@@ -135,7 +139,7 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
         graph[from].push_back(Edge(from, to, weight));
         graph[to].push_back(Edge(to, from, weight));
         edgeCnt++;
-        cout << "Add (" << from << " - " << to << ")" << weight << endl;
+        //logIt(logDEBUG) << "Add (" << from << " - " << to << ")" << weight << "\n";
     }
 }
 
@@ -148,7 +152,7 @@ void ListGraph::Add(Edge &edge)
         graph[from].push_back(edge);
         graph[to].push_back(edge);
         edgeCnt++;
-        cout << "Add (" << from << " - " << to << ")" << edge.weight << endl;
+        //logIt(logDEBUG) << "Add (" << from << " - " << to << ")" << edge.weight << "\n";
     }
 }
 
@@ -176,7 +180,7 @@ int ListGraph::generateRandom(unsigned int N, double dens, unsigned int distance
     }
     else
     {
-        cout << "ERROR! Graph is already initialized to size " << this->nodeCnt << endl;
+        std::cerr << "ERROR! Graph is already initialized to size " << this->nodeCnt << "\n";
         return -1;
     }
     return 0;
@@ -187,23 +191,23 @@ void ListGraph::printGraph()
     if (this->nodeCnt > 0)
     {
         unsigned int i = 0;
-        for ( vector<Edge> v: this->graph)
+        for (vector<Edge> v: this->graph)
         {
             cout << endl << setw(3) << i++ << " -> ";
             for ( Edge n: v)
-                cout << n << ", ";
+                std::cout << "(" << n << "), ";
         }
         cout << endl;
     }
     else
-        cout << "Graph is empty." << endl;
+        std::cerr << "Graph is empty." << "\n";
 }
 
 // Print graph on screen as connectivity matrix
 void ListGraph::printGraph(MatrixStyle style)
 {
     if (this->nodeCnt == 0) {
-        cout << "Graph is empty." << endl;
+        std::cout << "Graph is empty." << std::endl;
         return;
     }
 
@@ -227,6 +231,18 @@ void ListGraph::printGraph(MatrixStyle style)
     cout << endl;
 }
 
+int ListGraph::outputGraph(std::string filename)
+{
+    ofstream outGraph(filename.c_str());
+    outGraph << this->nodeCnt << "\n";
+    for(auto v: this->graph) {
+        for(auto e: v) {
+            outGraph << e << "\n";
+        }
+    }
+    outGraph.close();
+    return 0;
+}
 // Checks if graph is connected (all nodes are reachable)
 bool ListGraph::isConnected()
 {
@@ -238,7 +254,7 @@ bool ListGraph::isConnected()
     openset.insert(connected);      // Place node "0" in open set
     if(nodeCnt == 0)
     {
-        cout << "Graph is empty" << endl;
+        //logIt(logERROR) << "Graph is empty." << "\n";
         return false;
     }
 
@@ -275,8 +291,8 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
 {
     if ( source >= this->nodeCnt)
     {
-        cout << "Error! " << source << " node number is not in the graph!" <<
-                "This graph has " << this->nodeCnt << " elements (vertices)" << endl;
+        std::cerr<< "Error! " << source << " node number is not in the graph!" <<
+                "This graph has " << this->nodeCnt << " elements (vertices)" << "\n";
         return 0;
     }
 
@@ -318,17 +334,17 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
         }
         current_old = current;
     }
-#if 1
-    cout << endl << "Dijstra solution from node " << source << " is:" << endl << "[node]: [distance]" << endl;
+
+    std::cout << "\nDijstra solution from node " << source << " is:\n" << "[node]: [distance]\n";
     for (unsigned int i = 0; i < distances.size(); ++i) {
-        cout << setw(2) << i << ":  ";
+        std::cout << setw(2) << i << ":  ";
         if (distances[i] == UINT_MAX)
-                cout << "not reachable" << endl;
+            std::cout << "not reachable\n";
         else
-            cout << distances[i] << endl;
+            std::cout << distances[i] << "\n";
 
     }
-#endif
+
     delete Q;
     return (average/distances.size());
 }
@@ -336,9 +352,9 @@ unsigned int ListGraph::Dijkstra(unsigned int source)
 
 template<typename A> void printEdgeSet(A& edges)
 {
-    for (auto e: edges)
-        cout << e << ", ";
-    cout << endl;
+//    for (auto e: edges)
+//        std::cout << e << ", ";
+//    std::cout << "\n";
 }
 
 
@@ -357,11 +373,11 @@ unsigned int ListGraph::MST(unsigned int source)
         for (auto v: graph[cur])
         {
             if(!covered[v.vertex]) {
-                cout << "Found not covered vertex from " << cur << ": " << v << endl;
+//                logIt(logDEBUG) << "Found not covered vertex from " << cur << ": " << v << "\n";
                 Q.insert(v);
             }
         }
-        printEdgeSet(Q);
+//        printEdgeSet(Q);
         Edge minV = *Q.begin();
         mst->Add(minV.from, minV.vertex, minV.weight);
         mst_cost += minV.weight;
@@ -371,11 +387,11 @@ unsigned int ListGraph::MST(unsigned int source)
         }
         covered[minV.vertex] = 1;
         cur = minV.vertex;
-        cout << "Erased all connections to vertex " << minV.vertex << " from Q" << endl;
-        printEdgeSet(Q);
+        //logIt(logDEBUG) << "Erased all connections to vertex " << minV.vertex << " from Q\n";
+//        printEdgeSet(Q);
 
     }while (!Q.empty()); // until all nodes are in mst
-    mst->printGraph();
+//    mst->printGraph();
     delete mst;
     return mst_cost;
 }
