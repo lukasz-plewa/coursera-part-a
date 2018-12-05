@@ -130,10 +130,16 @@ The iterator hierarchy:
   ++ sequention move
   * access operator
   sequential access elements in input stream.
-  find(elem) in a collection searched sequentially
+  find(elem) in a collection searched sequentially - must hem that functiion
   == and != are defined also
 
+2. find(elem) in a collection searched sequentially - must hem that functiion
 
+3. Forward iterator
+  Search forward direction one-by-one
+  The operator ++ is defined and dereferencing operator * and ->
+  Iterators may be compared for equality == and != and may be constructed and copy constructed. A canonical algorith using this iterator is the STL replace algorithm:
+  
 
 
 

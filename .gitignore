@@ -8,3 +8,10 @@ RemoteSystemsTempFiles/
 documents/
 coursera-test-peers/
 .tracecompass
+.vscode/
+.cproject
+.project
+.settings/
+.vscode/
+*.cbp
+*.layout
