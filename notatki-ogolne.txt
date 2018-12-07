@@ -140,6 +140,13 @@ The iterator hierarchy:
   The operator ++ is defined and dereferencing operator * and ->
   Iterators may be compared for equality == and != and may be constructed and copy constructed. A canonical algorith using this iterator is the STL replace algorithm:
   
+4. Bideractional iterator
+  template<typename T>
+  void reverse(BidirectionalIterator first, BidirectionalIterator last);
+  
+  przykład użycia to sprawdzenie czy string jest palindromem
+  
+5. Random access iterator
 
 
 
