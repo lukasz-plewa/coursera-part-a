@@ -1,55 +1,57 @@
 #include <iostream>
 #include <cstdlib>
+#include <string>
 
 #include "hexboard.h"
 
-void process(std::string &line);
-
-const unsigned int board_dimention = 11;
+const std::string player_turn[2] = {("RED (X)  > ") ,("BLUE (O) > ")};
 
 int main()
 {
-    std::cout << "Creating board with size " << board_dimention << std::endl;
-    HexBoardGraph board(board_dimention);
-    board.printGraph();
-    std::cout << "This board " << (board.isConnected() ? "is" : "is not") << " connected" << std::endl;
+    unsigned int turn = 0;              // RED player has first move
+    unsigned int board_dimension = 11;
 
-    board.putColor(1, 1, Colour::RED);
-    board.putColor(1, 2, Colour::RED);
-    board.putColor(1, 3, Colour::RED);
-    board.putColor(1, 4, Colour::RED);
-    board.putColor(4, 1, Colour::RED);
-    board.putColor(11, 9, Colour::BLUE);
-    board.putColor(11, 10, Colour::BLUE);
-    board.putColor(10, 11, Colour::BLUE);
-
-    for (std::string line; std::cout << "APP > " && std::getline(std::cin, line); )
+    std::cout << "Hex board size?" << std::endl;
+    std::cin >> board_dimension;
+    if ( board_dimension > MAX_BOARD_SIZE || board_dimension < 3 )
     {
-        unsigned int xpos = 0;
-        if (!line.empty())
-        {
-            auto inputC = line.begin();
-            system("clear");
-            std::cout << "Input << " << *inputC;
-            if (*inputC >= 'a' && *inputC <= 'k')
-            {
-                xpos = static_cast<unsigned int>(*inputC - 'a') + 1;
-                std::cout << "Entered pos " << xpos << std::endl;
-
-                inputC++;
-                if(*inputC > '0' && *inputC <= '9')
-                {
-                    
-                        std::cout << *inputC << std::endl;
-            
-                }
-                board.printBoard();
-            }
-        }
-
-        
-        std::cout << "Entered pos " << xpos << std::endl;
+        std::cerr << board_dimension << " is wrong Size. Valid are from 3 to " << MAX_BOARD_SIZE << std::endl;
+        return 2;
     }
 
+    HexBoardGraph board(board_dimension);
+
+    system("clear");
     board.printBoard();
+    for (std::string line; std::cout << player_turn[turn] && std::getline(std::cin, line); )
+    {
+        if (!line.empty())
+        {
+            HexBoardPosition move(line);
+            if (move.isValid())
+            {
+                if (board.putColor(move, (turn == 0 ? Colour::RED : Colour::BLUE) ))
+                {
+                    system("clear");
+                    board.printBoard();
+                    std::cout << (turn == 0 ? "RED (X):  " : "BLUE (O): ") << move << std::endl;
+                    turn = (turn ? 0 : 1);  // Next turn
+                }
+            }
+            else
+            {
+                if (line.compare("exit") == 0)
+                {
+                    std::cout << "Exit? Are you sure?";
+                    std::cin >> line;
+                    break;
+                }
+                std::cout << "Invalid input: \'" << move << "\' Try again." << std::endl;
+            }
+        }
+    }
+
+    
+    std::cout << "Exiting." << std::endl;
+    return 0;
 }

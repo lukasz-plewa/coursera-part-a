@@ -1,3 +1,7 @@
+#include <iterator>
+#include <string>
+#include <sstream>
+
 #include "hexboard.h"
 
 /*
@@ -71,18 +75,66 @@ void HexBoardGraph::printBoard()
  * x - position in row (A - K)
  * y - row number (1 - 11)
  */
-void HexBoardGraph::putColor(unsigned int x, unsigned int y, Colour c)
+bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
 {
-    if (x && y && x <= dimension && y <= dimension)
+    if (p.x && p.y && p.x <= dimension && p.y <= dimension)
     {
-        unsigned int id = (y-1) * dimension + (x-1);
+        unsigned int id = (p.y-1) * dimension + (p.x-1);
         if (getColour(id) == Colour::NONE)
+        {
             setColour(id, c);
+            return true;
+        }
         else
-            std::cerr << "ERROR, position (" << x << ", " << y << ") already occupied by " << graph[id]->getColour() << std::endl;
+            std::cerr << "ERROR, position (" << p << ") already occupied by " << graph[id]->getColour() << std::endl;
     }
     else
     {
         std::cerr << "ERROR, wrong coordinates" << std::endl;
     }
+    return false;
 }
+
+// Check if RED player already wins (is connection from top to bottom row)
+bool HexBoardGraph::RedWin()
+{
+
+}
+
+// Check if BLUE player already wins (is connection from left to right side)
+bool HexBoardGraph::BlueWin()
+{
+
+}
+
+
+/*
+ * HexBoardPosition
+ */
+
+HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
+{
+    std::istringstream iss(pos);
+    std::vector<std::string> splited((std::istream_iterator<std::string>{iss}),
+                                      std::istream_iterator<std::string>());
+    unsigned int X = 0, Y = 0;
+
+    if(splited.size() == 2 && splited[0].size() == 1 && splited[1].size() > 0 && splited[1].size() < 3)
+    {
+        X = splited[0].at(0) + 1 - 'a';
+        Y = std::stoi(splited[1]);
+        if (X > 0 && X <= MAX_BOARD_SIZE && Y > 0 && Y <= MAX_BOARD_SIZE)
+        {
+            x = X;
+            y = Y;
+            valid = true;
+        }
+        else
+            std::cerr << "ERROR, Position not valid." << std::endl;
+    }
+    else
+    {
+        std::cerr << "ERROR, wrong input to board position: Example: \'C 3\'" << std::endl;
+    }
+}
+

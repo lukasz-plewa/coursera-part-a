@@ -27,9 +27,9 @@ std::ostream& operator<< (std::ostream &out, const Colour &c)
         case Colour::NONE:
             out << "."; break;
         case Colour::RED:
-            out << "R"; break;
+            out << "X"; break;
         case Colour::BLUE:
-            out << "B"; break;
+            out << "O"; break;
     }
     return out;
 }
