@@ -35,6 +35,8 @@ int main()
                     system("clear");
                     board.printBoard();
                     std::cout << (turn == 0 ? "RED (X):  " : "BLUE (O): ") << move << std::endl;
+                    if (board.RedWin() || board.BlueWin())
+                        break;
                     turn = (turn ? 0 : 1);  // Next turn
                 }
             }
@@ -42,8 +44,6 @@ int main()
             {
                 if (line.compare("exit") == 0)
                 {
-                    std::cout << "Exit? Are you sure?";
-                    std::cin >> line;
                     break;
                 }
                 std::cout << "Invalid input: \'" << move << "\' Try again." << std::endl;

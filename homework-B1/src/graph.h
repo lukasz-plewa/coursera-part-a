@@ -112,6 +112,7 @@ protected:
 
 class MstGraph : public ListGraph
 {
+protected:
     bool areConnected(unsigned int Xnode, unsigned int Ynode);
 public:
     MstGraph() : ListGraph() {};

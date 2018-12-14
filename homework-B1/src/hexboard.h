@@ -11,7 +11,10 @@ class HexBoardPosition
     unsigned int x, y;          // Indexed from 1
     
 public:
-    explicit HexBoardPosition(unsigned int X, unsigned int Y) : valid(false), x(X), y(Y) {}
+    explicit HexBoardPosition(unsigned int X, unsigned int Y) : valid(false), x(X), y(Y)
+    { 
+        if (X > 0 && X <= MAX_BOARD_SIZE && Y > 0 && Y <= MAX_BOARD_SIZE) valid = true;
+    }
     explicit HexBoardPosition(const std::string &pos);
     unsigned int getX() const { return x; }
     unsigned int getY() const { return y; }
@@ -27,12 +30,12 @@ inline std::ostream& operator<< (std::ostream& os, const HexBoardPosition& pos)
 }
 
 
-class HexBoardGraph : public ListGraph
+class HexBoardGraph : public MstGraph
 {
 public:
-    HexBoardGraph() : ListGraph(), dimension(0) {}
+    HexBoardGraph() : MstGraph(), dimension(0) {}
     HexBoardGraph(unsigned int n);      // Board with n rows and colls
-    void Add(unsigned int from, unsigned int to) { this->ListGraph::Add(from, to, 1); }
+    void Add(unsigned int from, unsigned int to) { this->MstGraph::Add(from, to, 1); }
     bool RedWin();
     bool BlueWin();
 
@@ -42,6 +45,8 @@ public:
 
 private:
     unsigned int dimension;
+    HexBoardPosition graphIdToPosition(unsigned int Id);
+    unsigned int HexBoardPositionToId(const HexBoardPosition &pos);
 };
 
 #endif //HEXBOARD_H_

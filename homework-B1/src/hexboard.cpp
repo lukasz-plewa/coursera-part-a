@@ -19,7 +19,7 @@
 
 */
 
-HexBoardGraph::HexBoardGraph(unsigned int n) : ListGraph(n*n), dimension(n)
+HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
 {
     unsigned int row, node;
     unsigned int current = 0;
@@ -47,8 +47,24 @@ HexBoardGraph::HexBoardGraph(unsigned int n) : ListGraph(n*n), dimension(n)
     }
 }
 
+HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
+{
+    unsigned int X, Y;
+    X = Id % dimension + 1;
+    Y = Id / dimension + 1;
+    HexBoardPosition pos(X, Y);
+    return pos;
+}
+
+unsigned int HexBoardGraph::HexBoardPositionToId(const HexBoardPosition &pos)
+{
+    return ( (pos.y-1) * dimension + pos.x - 1);
+}
+
 void HexBoardGraph::printBoard()
 {
+    std::cout << "RED (" << Colour::RED << ") is on top and bottom." << std::endl
+              << "BLUE (" << Colour::BLUE << ") is on left and right." << std::endl;
     for (unsigned int row = 0; row < dimension; ++row)
     {
         std::string indent((2*row), ' ');
@@ -98,13 +114,52 @@ bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
 // Check if RED player already wins (is connection from top to bottom row)
 bool HexBoardGraph::RedWin()
 {
-
+    // Iterate on top and bottom rows
+    for(auto rowTop = graph.begin(); rowTop != graph.begin() + dimension; ++rowTop)
+    {
+        if ((*rowTop)->getColour() == Colour::RED)
+        {
+            // Now start from first Vertex in last row
+            for(auto rowBottom = graph.begin() + dimension * (dimension-1); rowBottom != graph.end(); ++rowBottom)
+            {
+                if ((*rowBottom)->getColour() == Colour::RED)
+                {
+                    if (this->areConnected((*rowTop)->Id(), (*rowBottom)->Id()))
+                    {
+                        std::cout << "Red player wins from " << graphIdToPosition((*rowTop)->Id()) << " to "
+                                  << graphIdToPosition((*rowBottom)->Id()) << std::endl;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 // Check if BLUE player already wins (is connection from left to right side)
 bool HexBoardGraph::BlueWin()
 {
-
+    for(auto colLeft = graph.begin(); colLeft != graph.end(); colLeft+=dimension)
+    {
+        if ((*colLeft)->getColour() == Colour::BLUE)
+        {
+            auto colRight = graph.begin();
+            while (colRight != graph.end())
+            {
+                colRight += (dimension - 1);    // move to last element in row
+                if ((*colRight)->getColour() == Colour::BLUE &&
+                    areConnected((*colLeft)->Id(), (*colRight)->Id()))
+                {
+                        std::cout << "Blue player wins from " << graphIdToPosition((*colLeft)->Id()) << " to "
+                                  << graphIdToPosition((*colRight)->Id()) << std::endl;
+                        return true;
+                }
+                ++colRight;     // move one after last in row (next row or end())
+            }
+        }
+    }
+    return false;
 }
 
 
