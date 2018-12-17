@@ -6,7 +6,7 @@
 
 /*
  5 x 5 hex board graph example (5 rows and 5 cols):
-
+ 
 . - . - . - . - .
  \ / \ / \ / \ / \
   . - . - . - . - .
@@ -16,7 +16,6 @@
       . - . - . - . - .
        \ / \ / \ / \ / \
         . - . - . - . - .
-
 */
 
 HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
@@ -47,6 +46,7 @@ HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
     }
 }
 
+// Just calculate from graph ID to HEX board position
 HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
 {
     unsigned int X, Y;
@@ -56,11 +56,13 @@ HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
     return pos;
 }
 
+// Just translate HEX board position to graph ID
 unsigned int HexBoardGraph::HexBoardPositionToId(const HexBoardPosition &pos)
 {
     return ( (pos.y-1) * dimension + pos.x - 1);
 }
 
+// Print board as ASCII - used for every game iteration
 void HexBoardGraph::printBoard()
 {
     std::cout << "RED (" << Colour::RED << ") is on top and bottom." << std::endl
@@ -87,10 +89,7 @@ void HexBoardGraph::printBoard()
     }
 }
 
-/*
- * x - position in row (A - K)
- * y - row number (1 - 11)
- */
+// Try to put color on board position 
 bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
 {
     if (p.x && p.y && p.x <= dimension && p.y <= dimension)
@@ -124,7 +123,7 @@ bool HexBoardGraph::RedWin()
             {
                 if ((*rowBottom)->getColour() == Colour::RED)
                 {
-                    if (this->areConnected((*rowTop)->Id(), (*rowBottom)->Id()))
+                    if (this->areConnected((*rowTop)->Id(), (*rowBottom)->Id(), Colour::RED))
                     {
                         std::cout << "Red player wins from " << graphIdToPosition((*rowTop)->Id()) << " to "
                                   << graphIdToPosition((*rowBottom)->Id()) << std::endl;
@@ -149,7 +148,7 @@ bool HexBoardGraph::BlueWin()
             {
                 colRight += (dimension - 1);    // move to last element in row
                 if ((*colRight)->getColour() == Colour::BLUE &&
-                    areConnected((*colLeft)->Id(), (*colRight)->Id()))
+                    areConnected((*colLeft)->Id(), (*colRight)->Id(), Colour::BLUE))
                 {
                         std::cout << "Blue player wins from " << graphIdToPosition((*colLeft)->Id()) << " to "
                                   << graphIdToPosition((*colRight)->Id()) << std::endl;
@@ -163,10 +162,9 @@ bool HexBoardGraph::BlueWin()
 }
 
 
-/*
- * HexBoardPosition
- */
-
+// 
+// HexBoardPosition
+// 
 HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
 {
     std::istringstream iss(pos);
@@ -192,4 +190,3 @@ HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
         std::cerr << "ERROR, wrong input to board position: Example: \'C 3\'" << std::endl;
     }
 }
-

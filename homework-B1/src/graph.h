@@ -20,7 +20,7 @@ inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(R
 inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 
-// Definition of edge object: from vertex and weight value pair
+// Edge object: (from, to) vertex Ids and weight (edge cost)
 class Edge {
     const unsigned int from, vertex; // Connected vertices
     const unsigned int weight;       // Weight of this edge
@@ -50,6 +50,7 @@ enum class Colour {NONE, RED, BLUE};
 
 std::ostream& operator<< (std::ostream &out, const Colour &c);
 
+// Single vertex class. Contains information about colour and keeps edge list
 class Vertex
 {
 public:
@@ -110,16 +111,17 @@ protected:
     Colour getColour(unsigned int id) { return graph[id]->color; }
 };
 
+// Inherited class to implement MST algorithms on it
 class MstGraph : public ListGraph
 {
 protected:
-    bool areConnected(unsigned int Xnode, unsigned int Ynode);
+    bool areConnected(unsigned int Xnode, unsigned int Ynode, Colour c);
 public:
     MstGraph() : ListGraph() {};
     MstGraph(unsigned int n) : ListGraph(n) {};
     MstGraph(std::ifstream& inFile) : ListGraph(inFile) {};
 
-    unsigned int MST(unsigned int source);      // Start from "source" node number
+    unsigned int MST(unsigned int source);      // Start from "source" node number - Prim's algorithm
     unsigned int MST();                         // MST using KRUSKAL algorithm
 };
 

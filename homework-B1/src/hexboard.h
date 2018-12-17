@@ -5,6 +5,7 @@
 
 const unsigned int MAX_BOARD_SIZE  = 20;
 
+// Simple class to abstract board position over our graph representation
 class HexBoardPosition
 {
     bool valid;
@@ -29,7 +30,10 @@ inline std::ostream& operator<< (std::ostream& os, const HexBoardPosition& pos)
     os << "(" << static_cast<char>('A' + pos.getX() - 1) << " " << pos.getY() << ")"; return os;
 }
 
-
+/*
+ * Hex game board representation class. 
+ * Inherits from MstGraph and uses HexBoardPosition class to make easier game implementation 
+ */
 class HexBoardGraph : public MstGraph
 {
 public:

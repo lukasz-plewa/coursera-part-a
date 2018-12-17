@@ -13,5 +13,5 @@ all: $(OBJ)
 	$(CXX) $@ -c $<
 
 clean:
-	rm -f *.o
-	m $(BIN)
+	rm -f src/*.o
+	rm $(BIN)

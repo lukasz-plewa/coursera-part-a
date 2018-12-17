@@ -11,8 +11,6 @@
 
 #include "graph.h"
 
-//using namespace std;
-
 
 // Simple print to console the edge in format: (from ~ to, weight)
 std::ostream& operator<< (std::ostream &out, const Edge &edge)
@@ -34,6 +32,7 @@ std::ostream& operator<< (std::ostream &out, const Colour &c)
     return out;
 }
 
+// Add new edge to Vertex
 void Vertex::Add(unsigned int to, unsigned int weight)
 {
     // Add only if that edge doesn't exist in the graph
@@ -43,6 +42,7 @@ void Vertex::Add(unsigned int to, unsigned int weight)
     }
 }
 
+// Check if Vertex is connected with another 
 bool Vertex::hasConnection(unsigned int to)
 {
     return (std::find_if(edges.begin(), edges.end(), [&to](Edge & obj) -> bool {return (obj.To() == to);}) != edges.end());
@@ -111,7 +111,7 @@ ListGraph::ListGraph(std::ifstream& inFile)
     }
 }
 
-
+// Construct graph from static 2D array
 ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
 {
     density = 0.0;
@@ -127,6 +127,7 @@ ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
     }
 }
 
+// Construct graph from static 2D array
 int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
 {
     if (matrix == NULL && N > 0)
@@ -182,6 +183,7 @@ void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
     }
 }
 
+// Connects two nodes with new edge
 void ListGraph::Add(Edge &edge)
 {
     if (!graph[edge.From()]->hasConnection(edge.To()))
@@ -256,7 +258,7 @@ bool ListGraph::isConnected()
     openset.insert(connected);      // Place node "0" in open set
     if(nodeCnt == 0)
     {
-        //logIt(logERROR) << "Graph is empty." << "\n";
+        //std:cerr << "Graph is empty." << "\n";
         return false;
     }
 
@@ -403,7 +405,7 @@ unsigned int MstGraph::MST(unsigned int source)
 }
 
 // Checks if two graph Vertices are connected
-bool MstGraph::areConnected(unsigned int Xnode, unsigned int Ynode)
+bool MstGraph::areConnected(unsigned int Xnode, unsigned int Ynode, Colour c)
 {
     bool isconnected = false;
     std::set<unsigned int> openset;
@@ -412,18 +414,24 @@ bool MstGraph::areConnected(unsigned int Xnode, unsigned int Ynode)
     unsigned int connected = Xnode; // Start from Xnode
     openset.insert(connected);      // Place node Xnode in open set
 
+    if (graph[Ynode]->color != c)   // wrong colour
+        return isconnected;
+
     do
     {
-        if (this->graph[connected]->Empty())         // Vertex without any edges
+        if (this->graph[connected]->Empty()) // Vertex without any edges or wrong colour
             break;
 
-        // For every vertex reachable from 'connected' node:
-        for(Edge node: this->graph[connected]->edges)
+        if (graph[connected]->color == c)
         {
-            if(node.To() == Ynode)    // Wanted Ynode node found! Success
-                return true;
-            if (closedset.find(node.To()) == closedset.end())
-                openset.insert(node.To());        // Add to open set if not in closed set
+            // For every vertex reachable from 'connected' node:
+            for(Edge node: this->graph[connected]->edges)
+            {
+                if(node.To() == Ynode)    // Wanted Ynode node found! Success
+                    return true;
+                if (closedset.find(node.To()) == closedset.end())
+                    openset.insert(node.To());        // Add to open set if not in closed set
+            }
         }
         closedset.insert(connected);                // This node is done
         openset.erase(connected);
@@ -460,7 +468,7 @@ unsigned int MstGraph::MST()
     while (mst->edgeCnt != (this->nodeCnt-1)) // if MST is not yet spanning
     {
         // check if both nodes from the edge are not in reached nodes: avoid loops
-        if ( !mst->areConnected(eit->From(), eit->To()) )
+        if ( !mst->areConnected(eit->From(), eit->To(), Colour::NONE) )
         {
             mst->Add(eit->From(), eit->To(), eit->Weight());
             mstCost += eit->Weight();
