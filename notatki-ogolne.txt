@@ -148,6 +148,27 @@ The iterator hierarchy:
   
 5. Random access iterator
 
+--------------------------------------------------------------------------------
+Containers:
+  - Sequence - ordered by sequence of elements
+  - Associative - keys for looking up elements
+ 
+Container Interfaces:
+  - Constrctors: default, copy (and "move constructors" since C++11)
+  - element access
+  - element insertion
+  - element emplacement (new C++11 (&&))
+  - element deletion
+  - destructor
+  - iterators
+  
+--------------------------------------------------------------------------------
+Game of HEX
+- gdy tura komputera: sprawdź wszsytkie legalne ruchy i wybierz "najlepszy"
+- kazdy możliwy ruch będzie obliczony z ~1000 prób
+- każda próba to kontynuowanie gry przy pomocy losowych ruchów aż do wyznaczenia wygranego
+- każda próba kończy się wygraną lub przegraną
+- stosunek wygranych/prób będzie wyznacznikiem, który ruch jest lepszy i ma być użyty do kolejnego ruchu
 
 
 

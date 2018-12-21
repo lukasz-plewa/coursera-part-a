@@ -18,7 +18,7 @@
         . - . - . - . - .
 */
 
-HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
+HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n), occupied(0)
 {
     unsigned int row, node;
     unsigned int current = 0;
@@ -46,20 +46,29 @@ HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
     }
 }
 
-// Just calculate from graph ID to HEX board position
-HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
+// create vector with IDs of empty vertices (without color)
+void HexBoardGraph::GetEmptyIds(std::vector<unsigned int>& list)
 {
-    unsigned int X, Y;
-    X = Id % dimension + 1;
-    Y = Id / dimension + 1;
-    HexBoardPosition pos(X, Y);
-    return pos;
+    for (unsigned int i = 0; i < V(); ++i)
+    {
+        if( getColour(i) == Colour::NONE)
+        {
+            list.push_back(i);
+        }
+    }
 }
 
-// Just translate HEX board position to graph ID
-unsigned int HexBoardGraph::HexBoardPositionToId(const HexBoardPosition &pos)
+// Copy graph colors from source board - handy for move evaluation
+void HexBoardGraph::InitializeBoardColors(const HexBoardGraph *source_board)
 {
-    return ( (pos.y-1) * dimension + pos.x - 1);
+    if (dimension == source_board->dimension)
+    {
+        for (unsigned int id = 0; id < this->V(); ++id)
+        {
+            setColour(id, source_board->getColour(id));
+        }
+        this->occupied = source_board->occupied;
+    }
 }
 
 // Print board as ASCII - used for every game iteration
@@ -111,6 +120,20 @@ bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
     return false;
 }
 
+// Try to put color on board - using direct graph id
+bool HexBoardGraph::putColor(unsigned int id, Colour c)
+{
+    if (getColour(id) == Colour::NONE)
+    {
+        setColour(id, c);
+        occupied++;
+        return true;
+    }
+
+    std::cerr << "ERROR, position (" << graphIdToPosition(id) << ") already occupied by " << graph[id]->getColour() << std::endl;
+    return false;
+}
+
 // Check if RED player already wins (is connection from top to bottom row)
 bool HexBoardGraph::RedWin()
 {
@@ -126,8 +149,6 @@ bool HexBoardGraph::RedWin()
                 {
                     if (this->areConnected((*rowTop)->Id(), (*rowBottom)->Id(), Colour::RED))
                     {
-                        std::cout << "Red player wins from " << graphIdToPosition((*rowTop)->Id()) << " to "
-                                  << graphIdToPosition((*rowBottom)->Id()) << std::endl;
                         return true;
                     }
                 }
@@ -151,8 +172,6 @@ bool HexBoardGraph::BlueWin()
                 if ((*colRight)->getColour() == Colour::BLUE &&
                     areConnected((*colLeft)->Id(), (*colRight)->Id(), Colour::BLUE))
                 {
-                        std::cout << "Blue player wins from " << graphIdToPosition((*colLeft)->Id()) << " to "
-                                  << graphIdToPosition((*colRight)->Id()) << std::endl;
                         return true;
                 }
                 ++colRight;     // move one after last in row (next row or end())
@@ -162,10 +181,11 @@ bool HexBoardGraph::BlueWin()
     return false;
 }
 
-
-// 
-// HexBoardPosition
-// 
+//
+//
+// HexBoardPosition class
+//
+//
 HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
 {
     std::istringstream iss(pos);
@@ -188,6 +208,14 @@ HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
     }
     else
     {
-        std::cerr << "ERROR, wrong input to board position: Example: \'C 3\'" << std::endl;
+        std::cerr << "ERROR, wrong input to board position: Example: \'c 3\'" << std::endl;
     }
+}
+
+// HexBoardPosition copy constructor
+HexBoardPosition::HexBoardPosition(const HexBoardPosition &original)
+{
+    valid = original.valid;
+    x = original.x;
+    y = original.y;
 }
