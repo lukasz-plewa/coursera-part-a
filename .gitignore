@@ -9,6 +9,8 @@ documents/
 coursera-test-peers/
 homework-B1_submit
 homework-B2-submit/
+temp/
+
 .tracecompass
 .vscode/
 .cproject
