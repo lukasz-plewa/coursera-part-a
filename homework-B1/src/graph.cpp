@@ -72,99 +72,6 @@ ListGraph::ListGraph(unsigned int n)
     }
 }
 
-// Load graph from file.
-// First line is an integer with nodes count.
-// Every other line in file has three integer values for edge definition:
-// For example: 0 1 7 - it means: edge from 0 to 1 with weight 7
-ListGraph::ListGraph(std::ifstream& inFile)
-{
-    density = 0.0;
-    edgeCnt = nodeCnt = 0;
-
-    if (inFile)
-    {
-        unsigned int n, from, to, weight;
-        std::istream_iterator<int> start(inFile), end;
-        std::vector<int> graph_file(start, end);
-        n = graph_file[0];
-        //logIt(logDEBUG) << "Number of nodes: " << n << "\n";
-        if ( n < nodes_limit)
-        {
-            graph.reserve(n);
-            for (unsigned int i = 0; i < n; i++)
-            {
-                graph.push_back( std::unique_ptr<Vertex>(new Vertex(i, Colour::NONE)) );
-            }
-            if (n == graph.size())
-                nodeCnt = n;
-            else
-                std::cout << "Error creating nodes vector\n";
-
-            for (auto it = (graph_file.begin()+1); it != graph_file.end(); ++it)
-            {
-                from = *it++;
-                to = *it++;
-                weight = *it;
-                this->Add(from, to, weight);
-            }
-        }
-    }
-}
-
-// Construct graph from static 2D array
-ListGraph::ListGraph(unsigned int** matrix, unsigned int N)
-{
-    density = 0.0;
-    edgeCnt = nodeCnt = 0;
-    if (matrix != NULL)
-    {
-        if( 0 != this->loadFromMatrix(matrix, N))
-            std::cout << "ERROR creating ListGraph object!" << std::endl;
-    }
-    else
-    {
-        std::cout << "ERROR! Null pointer as parameter!" << std::endl;
-    }
-}
-
-// Construct graph from static 2D array
-int ListGraph::loadFromMatrix(unsigned int** matrix, size_t N)
-{
-    if (matrix == NULL && N > 0)
-    {
-        std::cout << "Error! NULL pointer for matrix" << std::endl;
-        return -1;
-    }
-
-    if (this->nodeCnt == 0)
-    {
-        graph.reserve(N);
-        for (unsigned int i = 0; i < N; i++)
-        {
-            graph.push_back( std::unique_ptr<Vertex>(new Vertex(i, Colour::NONE)) );
-        }
-        for (size_t i = 0; i < N; i++)
-        {
-            for (size_t j = i; j < N; j++)
-            {
-                if (matrix[i][j])
-                {
-                    this->Add(i, j, matrix[i][j]);
-                }
-                //logIt(logDEBUG) << " " << matrix[i][j] << " ";
-            }
-            //logIt(logDEBUG) << "\n";
-        }
-        this->nodeCnt = N;
-    }
-    else
-    {
-        std::cout << "ERROR! Graph is already initialized to size " << this->nodeCnt << std::endl;
-        return -1;
-    }
-    return 0;
-}
-
 // Insert new edge into graph (if it doesn't exist)
 void ListGraph::Add(unsigned int from, unsigned int to, unsigned int weight)
 {
@@ -191,41 +98,7 @@ void ListGraph::Add(Edge &edge)
         graph[edge.From()]->Add(edge.To(), edge.Weight());
         graph[edge.To()]->Add(edge.From(), edge.Weight());
         edgeCnt++;
-        //logIt(logDEBUG) << "Add (" << from << " - " << to << ")" << edge.weight << "\n";
     }
-}
-
-// Generate weighted and undirected graph with list representation
-// Connections and weight values are random
-// dens - graph density used when generating connections
-// distanceRange - maximum distance when
-int ListGraph::generateRandom(unsigned int N, double dens, unsigned int distanceRange)
-{
-    if (this->nodeCnt == 0 && N > 0)
-    {
-        unsigned int i = 0;
-
-        graph.reserve(N);
-        for (i = 0; i < N; i++) {
-            graph.push_back( std::unique_ptr<Vertex>(new Vertex(i, Colour::NONE)) );
-        }
-        this->nodeCnt = N;
-        this->density = dens;
-        for (i = 0; i < N; i++) {
-            for(unsigned int j = (i+1); j < N; j++) {
-                if ( prob() < dens ) {
-                    unsigned int d = distance(distanceRange);
-                    this->Add(i, j, d);
-                }
-            }
-        }
-    }
-    else
-    {
-        std::cout << "ERROR! Graph is already initialized to size " << this->nodeCnt << std::endl;
-        return -1;
-    }
-    return 0;
 }
 
 // Simply print graph as a list of edges for every node

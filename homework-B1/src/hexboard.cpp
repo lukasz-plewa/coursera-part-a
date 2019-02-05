@@ -5,20 +5,27 @@
 #include "hexboard.h"
 
 /*
- 5 x 5 hex board graph example (5 rows and 5 cols):
- 
-. - . - . - . - .
- \ / \ / \ / \ / \
-  . - . - . - . - .
-   \ / \ / \ / \ / \
-    . - . - . - . - .
-     \ / \ / \ / \ / \
-      . - . - . - . - .
-       \ / \ / \ / \ / \
-        . - . - . - . - .
+ 5 x 5 hex board graph example (5 rows and 5 cols).
+ Rows and cols are numbered from 1 to 5
+  1   2   3   4   5 
+1 . - . - . - . - .
+  \ / \ / \ / \ / \
+2   . - . - . - . - .
+    \ / \ / \ / \ / \
+3     . - . - . - . - .
+      \ / \ / \ / \ / \
+4       . - . - . - . - .
+        \ / \ / \ / \ / \
+5         . - . - . - . - .
 */
 
-HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
+// HexBoard represents our board for game play
+// It inherits from MstGraph from course Part A
+// It extends standard graph representation with methods specific to Hex game
+// Constructor expect only dimension as parameter
+// It created MstGraph object with n*n vertices
+// This constructor also generate all edges on HEX board 
+HexBoard::HexBoard(unsigned int n) : MstGraph(n*n), dimension(n)
 {
     unsigned int row, node;
     unsigned int current = 0;
@@ -46,8 +53,8 @@ HexBoardGraph::HexBoardGraph(unsigned int n) : MstGraph(n*n), dimension(n)
     }
 }
 
-// Just calculate from graph ID to HEX board position
-HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
+// Translate from graph ID (from MstGraph class) to HEX board position X Y
+HexBoardPosition HexBoard::graphIdToPosition(unsigned int Id)
 {
     unsigned int X, Y;
     X = Id % dimension + 1;
@@ -56,14 +63,15 @@ HexBoardPosition HexBoardGraph::graphIdToPosition(unsigned int Id)
     return pos;
 }
 
-// Just translate HEX board position to graph ID
-unsigned int HexBoardGraph::HexBoardPositionToId(const HexBoardPosition &pos)
+// Translate HEX board position to graph ID (id is used in MstGraph class)
+unsigned int HexBoard::HexBoardPositionToId(const HexBoardPosition &pos)
 {
     return ( (pos.y-1) * dimension + pos.x - 1);
 }
 
 // Print board as ASCII - used for every game iteration
-void HexBoardGraph::printBoard()
+// This is HW 4 expectation number 1)
+void HexBoard::printBoard()
 {
     std::cout << "RED (" << Colour::RED << ") is on top and bottom." << std::endl
               << "BLUE (" << Colour::BLUE << ") is on left and right." << std::endl;
@@ -90,7 +98,7 @@ void HexBoardGraph::printBoard()
 }
 
 // Try to put color on board position 
-bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
+bool HexBoard::putColor(const HexBoardPosition& p, Colour c)
 {
     if (p.x && p.y && p.x <= dimension && p.y <= dimension)
     {
@@ -111,8 +119,8 @@ bool HexBoardGraph::putColor(const HexBoardPosition& p, Colour c)
     return false;
 }
 
-// Check if RED player already wins (is connection from top to bottom row)
-bool HexBoardGraph::RedWin()
+// Check if RED player already wins (is there connection from top to bottom row)
+bool HexBoard::RedWin()
 {
     // Iterate on top and bottom rows
     for(auto rowTop = graph.begin(); rowTop != graph.begin() + dimension; ++rowTop)
@@ -137,8 +145,8 @@ bool HexBoardGraph::RedWin()
     return false;
 }
 
-// Check if BLUE player already wins (is connection from left to right side)
-bool HexBoardGraph::BlueWin()
+// Check if BLUE player already wins (is there connection from left to right column)
+bool HexBoard::BlueWin()
 {
     for(auto colLeft = graph.begin(); colLeft != graph.end(); colLeft+=dimension)
     {
@@ -164,7 +172,10 @@ bool HexBoardGraph::BlueWin()
 
 
 // 
-// HexBoardPosition
+// HexBoardPosition class constructor
+// It takes string inputed by player as move coordinates:
+// First numer: column number (from 1 to board size)
+// Second number: row number
 // 
 HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
 {
@@ -173,9 +184,10 @@ HexBoardPosition::HexBoardPosition(const std::string &pos) : valid(false)
                                       std::istream_iterator<std::string>());
     unsigned int X = 0, Y = 0;
 
-    if(splited.size() == 2 && splited[0].size() == 1 && splited[1].size() > 0 && splited[1].size() < 3)
+    // Check if string contains exactly two numbers entered by player 
+    if(splited.size() == 2)
     {
-        X = splited[0].at(0) + 1 - 'a';
+        X = std::stoi(splited[0]);
         Y = std::stoi(splited[1]);
         if (X > 0 && X <= MAX_BOARD_SIZE && Y > 0 && Y <= MAX_BOARD_SIZE)
         {

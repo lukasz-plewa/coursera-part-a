@@ -154,14 +154,224 @@ Containers:
   - Associative - keys for looking up elements
  
 Container Interfaces:
-  - Constrctors: default, copy (and "move constructors" since C++11)
+  - Constructors: default, copy (and "move constructors" since C++11)
   - element access
   - element insertion
   - element emplacement (new C++11 (&&))
   - element deletion
   - destructor
   - iterators
+
+Containers overview:
+  - common set of properties
+  - constructors and destructors
+  - element access, insertion and deletion
+  - allocate and manage memory
+    - associated allocator objects
+    
+Array class container:
+  - used instead of example: int data[100]; - fixed size, prototype
+
+Associative containers: set, multiset, map, multimap
+  - Ordering relation "Compare" - comparison object for the associative containers - based on balanced trees
   
+unordered_map
+  - C++11 introduces "hash" based lookup for map and set
+  - unordered_map - uses hash lookup
+  - unordered_set - uses has lookup
+  - Advantage - much of the time O(1) lookup - thanks to hasing
+  
+  map<unsigned long, string> worker; // key, data, can be third parameter as compare object
+
+-----------------
+STL algorithm library
+  - sorting algorithms
+    - sort - uses quick sort
+    - stable_sort - elements remain in their relative same position (important only when non unique elements)
+
+  - non-mmutating sequence algorithms:
+    InputIter find(inputiter b, InputIter e, const T &t)
+    InputIter find_if(InputIter b, InputIter e, Predicate p)    Predicate - something that leads to true or false, functor
+    InputIter for_each(InputIter b, InputIter e, Function f)    Apply f to each value found in range b to e. This is a control structure
+
+  - Mutating Functions
+    OutputIter copy(InputIter b1, InputIter e1, OutputIter b2); // e2 is deduced
+    copying algorithm over elements b1 to e1
+    position returned is end of copy
+
+  - numerical algorithms
+    - sums
+    - inner product
+    - adjacent difference
+    - numerical algorithm functions behave as expected on numerical types where + and * are defined
+
+    inner_product - suma iloczynów dwóch wektorów
+
+    T accumulate(InputIter b, InputeIter e, T t, BinOp bop);  - dodatkowy parametr definiujący operator binarny, może być funkcja lambda?
+
+  - generally use iteratorst oaccess containres instantiated on given type 
+
+  - <array> C++11 STL feature - fixed size linear container
+    delegate construction - new C++11. my_container(T *b) : my_container() - default constructor is called (delegated) for code reuse
+
+-----------------
+Function objects ("Functors")
+  - A function object allows an instance object of a class to be called or invoked as if it were an ordinary function. In C++ this is carried out by overloading operator().
+  - useful to have function objects to further leverage STL library
+    Numerical functions have build-in meaning using + or *, as well as user-provided binary operators which could be passed in
+  - defined function objects can be found in function.h or build
+  - function objects are classes that have operator() defined
+    inlined, compiled producing efficient object code
+Function object Classes
+  - arithemtic objects
+    template <class T>
+    struct plus<t>
+
+  - Comparison objects
+
+  - Logical objects
+
+Function Adapter 
+
+-----------------
+Lambda expressions (derived from Lisp):
+  - unnamed function
+  - [](int i){cout << i << endl;}
+  - goes where the function object is required
+  - compiler deduces the return type
+  - we can explicity show the return type by lambda expression (arrow and type:
+    [](int n)->int{return ++n;}
+  - [ = ](int n)->int {return (n+external_value)}
+    [ captures ] :
+    captures can be:
+      - 
+  - [=] { printer(ts...); }; // nullary lambda (takes no parameters)
+
+----------------
+Polymorphism
+
+  Dynamic dispatch:
+  - base class pointer is polymorphic - wskaźnik na klasę bazową może mieć przypisany wskaźnik pochodnej i będzie wywoływał metody z pochodnej
+    object pointed by pointer selected dynamically at runtime 
+  
+  Relationship types:
+  - ISA   - inherits from, is a derived class 
+  - HASA  - subpart relationship: object is a part of another object inside it.
+
+  - class point3d final:public point{   - use final to discontinue inheritance. Since C++11
+
+  - overload - same function name but different signature (parameter list), it is compile-time selected based on signature
+    examples:
+    int foo(int);
+    int foo(double);
+
+  - override - in polymorphism the same function, with the same signature can be redefined in derived class (selected dynamically at runtime)
+    example (mixed overloading and virtual functions overriding both in play - its legal but leads to a lot of confusion):
+    class A {
+      virtual int foo(int);
+      virtual int foo(double);
+    };
+    class B : public A {
+      int foo(int);
+      int foo(double);
+    };
+
+  Virtual function member:
+  - once declared virtual, this property is carried along to all definitions in derived classes: virtual modifier not needed in derived classes
+  - virtual characteristic is inherited
+  - it can have dictinct return types (ta sama funkcja może zwracać inny typ)
+  - constructors cannot be virtual
+  - desctructors can be virtual
+    factory pattern can produce a bahaviour like a virtual constructor
+  - Pure virtual function. Every derived class inheriting from a class with a pure virtual function must override that function. 
+    virtual void attack() = 0;    // The virtual member functions without definition. The = 0 tells the compiler that the function has no body.
+
+-------------------------------------------
+Move semantics
+  - move semantics lead to efficiency when copying or assigning large aggregates.
+  int &&zmienna = move(i); // do not use i after this line
+  move - operator
+
+  noexcept - no exceptions from constructor
+Move constructor
+  - my_container(my_container &&b)noexcept
+    {
+      a = b.a;        // shallow copy, single address assignment
+      b.a = nullptr;  // what was in b "disappears"
+    }
+    contents are moved not copied
+  - new use of && to mean an rvalue address
+  - 
+
+  Addresses and Declarations:
+  a = b;      // assignment a is on lhs b is on rhs
+  int& a = b; // a is an lvalue reference
+  int* ptr_a = &b;  // ptr_a is address of b
+  int && b; // new declaration rvalue reference
+  - A non-const lvalue reference binds to an object
+  - A rlvalue reference binds to a temporary object that typically will not be used again.
+
+  my_container& operator=(my_container &&b)noexcept
+  {
+    a = b.a;
+    b.a = nullptr;
+    return *this;
+  }
+  Non-copying - move assignment; rhs destroyed
+
+-------------------------------------------
+Exceptions
+
+
+-------------------------------------------
+Lookahead as a graph
+  - standard model for strategy games involves tree lookahead
+  - A goes here, B goes there, continue until the position can be evaluated
+  - Evaluate at the leaf nodes and backup the score
+
+  MinMax tree:
+      ________5________
+     /        |        \
+    3         4         5
+   / \        |       / | \
+  3  10       4      5  6  7
+
+
+-------------------------------------------
+Plausable (reasonable) move generator
+  - When the number of moves is large - we use game heuristics
+    To limit the number of moves to analyze
+  - Ex - in chess average branching rate 40 moves per ply
+    Early programs examined <10 moves - eg checks, captures
+  - Development..
+  - In Hex - on 11x11 can have as many as 121 moves initially and - game generally last 20 moves per player
+    So even near end of game >60 legal moves
+
+  Summary. The ways of selecting plausable moves:
+  - bridge moves
+  - center squares
+  - path extension
+
+Hex:
+  - Can I make a winning move?
+  - Can I block or prevent a winning move?
+  - Can I extend my longest partial path?
+  - Can I block my opponents longest path?
+  - Can I extend or make a bridge move from a path
+  - Can I move to a row (column) that I do not occupy?
+
+Look ahead:
+  - min-max
+  - alpha-beta
+  - monte-carlo - radicly different approach
+
+-------------------------------------------
+Minimizer / maximazer
+  - alpha-beta improvement to min-max: usuwanie gałęzi, które i tak nie mają wpływu na obliczenie drzewa
+    - Maximizer - "I can at leasr get alpha"
+    - Minimizer - "I can at least get beta"
+  z wikipedii:
+
 --------------------------------------------------------------------------------
 Game of HEX
 - gdy tura komputera: sprawdź wszsytkie legalne ruchy i wybierz "najlepszy"
@@ -170,7 +380,180 @@ Game of HEX
 - każda próba kończy się wygraną lub przegraną
 - stosunek wygranych/prób będzie wyznacznikiem, który ruch jest lepszy i ma być użyty do kolejnego ruchu
 
+- planowanie ruchu na podstawie wybranej strategii:
+  - wydłużanie najdłuższej ścieżki (extending longest path)
+  - blokowanie najdłuższej ścieżki przeciwnika
 
 
 
 
+-------------------------------------------
+Exam Practice 3
+1. True or false? A publicly derived class is normally a subtype.
+  True
+2. True or false? A publically derived class has access to its base class private members.
+  False
+3. True or false? C++ is not a pure superset of C.
+  True
+4. True or false? A default argument can occur anywhere in an argument list.
+  False
+5. 
+
+-------------------------------------------
+Final Exam
+1. What is the C++11 meaning of the term &&?
+  Move semantics
+2. What is the C++11 meaning of the term nullptr?
+  pointer to 0
+3. What is the C++11 meaning of the term auto
+  infer type
+4. What is the C++11 meaning of the term explicit?
+  disable automatic conversion
+5. What is the C++11 meaning of the term noexcept?
+  no exceptions thrown
+6. The header <future> in C++11 is used for:
+  provides a mechanism to access the result of asynchronous operations:
+???  none of these
+7. L. Euler invented:
+  graph theory
+8. D. Knuth analyzed or invented:
+???  none of these
+  Don Knuth
+    - Art of Computation
+    - TEX - computer typesetting language
+    - Analysis of Alpha-beta, sorting adersaries,...
+    - LR parsing
+9. A new keyword in C++11 is:
+  nullptr
+10. A try block in C++:
+  is a scope that is followed by catch expressions
+11. C++11 STL:
+  has a hash based map
+12. HEX as a graph has its internal nodes:
+  with degree 6
+13. True or false? When you rethrow an exception, its type and value is convertible to int.
+  false
+14. True or false? Overloaded operators are always defined using static functions.
+  false
+15. True or false? All exceptions in C++ have as their base type the standard class type std::exception.
+???   
+16. True or false? Writeln is a new keyword in C++11.
+  false
+17. True or false? In the expression f(1) || (!g(2)), and without knowing the return types of f(1) and g(2), you can still assert that f(1) will always be evaluated before g(2) (which may not get evaluated at all).
+  true
+18. Using alpha-beta, can any LEAF nodes not be evaluated in the above tree?
+???  No
+  Yes
+19. When using =0 as the body of a function you are:
+???  a syntax error
+
+20. The catch signature ... means:
+  match any type
+21. In the following code segment, the type of foobar is:
+  list<int>::iterator
+22. In the following code, the list will end up:
+  having 2 elements
+23. For the above tree, what are the four Max values on the ply above the leaf nodes (from left to right). 
+  15 13 5 24
+24. For the above tree, what are the two Min values on the second ply (from left to right)?
+  13 5
+25. What is the Max value for the root of the tree?
+  13
+26. In the above tree, what is one of the two leaf node values that need not have been evaluated, using alpha-beta? (Enter one of the two possible values.)
+???
+27. What does the following print for the first *q?
+  46
+28. What does the following print for the second *q?
+  9
+29. What does the first line of the following print?
+  0
+
+  #include <iostream>
+  #include <vector>
+  #include <algorithm>
+  using namespace std;
+
+  int main()
+  {
+      vector<int> data(5,1);
+      int sum {0};
+
+      cout << sum << endl;
+      
+      for(auto element : data)
+           sum += element;
+      cout << sum << endl;
+
+      for(auto p = ++data.begin(); p != --data.end(); ++p)
+           sum += *p;
+      cout << sum << endl;
+    
+      sum = 0;
+      data.push_back(2);
+      data.push_back(3);
+      
+      for(auto element : data)
+           sum += element;
+      cout << sum << endl;
+
+      cout << accumulate(data.begin(), data.end(), data[0]) << endl;
+  }
+
+30. A key purpose of move semantics is:
+  efficiency
+31. What does the second line of the following print?
+  5
+32. What does the third line of the following print?
+  8
+33. What does the fourth line of the following print?
+  10
+34. What does the fifth line of the following print?
+  11
+35. What does the first line of the following print?
+Meow
+
+
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:  
+    virtual void speak()=0;
+    virtual  void purr() { cout << "Purr\n"; }
+};
+class Cat : public Animal {
+public:  
+    void speak() { cout << "Meow\n";purr(); }
+};
+class Lion : public Cat {
+public:  
+    void speak() { cout << "ROAR\n"; }
+    void purr() { cout << "ROAR\n"; }
+};
+int main() {
+  Animal* c = new Cat();
+  Cat napster;
+  Lion googly;
+
+  c->speak(); 
+ 
+  napster.speak();
+  googly.speak();
+  return 0; 
+}
+
+Meow
+Purr
+Meow
+Purr
+ROAR
+
+36. Purr
+37. Meow
+38. Purr
+39. ROAR
+40. The safest cast in C++ is considered:
+  static_cast
+41. The MST for an undirected connected graph of N nodes where all weights are cost C has:
+  a value of (N-1)*C
+42. 

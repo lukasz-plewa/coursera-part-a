@@ -3,7 +3,6 @@
 
 
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <ctime>
 #include <set>
@@ -11,13 +10,6 @@
 #include <climits>
 #include <utility>
 #include <memory>
-
-
-//using namespace std;
-
-
-inline double prob() { return (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)); }
-inline unsigned int distance(unsigned int limit) { return (rand() % limit); }
 
 
 // Edge object: (from, to) vertex Ids and weight (edge cost)
@@ -91,11 +83,7 @@ protected:
 public:
     ListGraph() : edgeCnt(0), nodeCnt(0), density(0.0) {}   // Empty graph
     ListGraph(unsigned int n);                              // Graph with n nodes without any edges
-    ListGraph(std::ifstream& inFile);                       // Graph defined in file as list of edges
-    ListGraph(unsigned int** matrix, unsigned int N);       // Graph from simple 2D array
 
-    int loadFromMatrix(unsigned int** matrix, size_t N);    // Load graph from 2D array
-    int generateRandom(unsigned int N, double dens, unsigned int distanceRange);
     void printGraph();
     unsigned int V() { return nodeCnt; }
     unsigned int E() { return edgeCnt; }
@@ -119,7 +107,6 @@ protected:
 public:
     MstGraph() : ListGraph() {};
     MstGraph(unsigned int n) : ListGraph(n) {};
-    MstGraph(std::ifstream& inFile) : ListGraph(inFile) {};
 
     unsigned int MST(unsigned int source);      // Start from "source" node number - Prim's algorithm
     unsigned int MST();                         // MST using KRUSKAL algorithm

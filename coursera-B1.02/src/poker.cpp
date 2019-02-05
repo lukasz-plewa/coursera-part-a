@@ -13,7 +13,6 @@ bool is_straight_flush(std::vector<Card> &hand);
 
 int main(int argc, const char * argv[])
 {
-    std::cout << "hello Visual Studio Code! :)" << '\n'; 
     Card card1(Suit::HEART, 3);
     std::cout << "Our first card is: " << card1 << std::endl;
 
